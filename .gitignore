@@ -1,0 +1,11 @@
+bin/
+obj/
+dist/
+.vs/
+*.user
+
+# 截图（含个人模组列表，不入库）
+tools/ui_check*.png
+tools/icon_preview.png
+tools/exe_icon_check.png
+tools/ui_about.png

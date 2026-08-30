@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>BSGroupGenerator</RootNamespace>
+    <AssemblyName>BSGroupGenerator</AssemblyName>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <Product>BS Group Generator</Product>
+    <Authors>lin-414</Authors>
+    <RepositoryUrl>https://github.com/lin-414/BSGroupGenerator</RepositoryUrl>
+    <Description>读取 Mod Organizer 2 安装的模组，为 BodySlide 批量生成服装分组（SliderGroups）文件。</Description>
+    <SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationDefaultFont>Microsoft YaHei UI, 9pt</ApplicationDefaultFont>
+    <!-- 自包含单文件发布时压缩运行时，体积约减半（首次启动略慢） -->
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+</Project>
