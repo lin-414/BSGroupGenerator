@@ -108,16 +108,18 @@ public class RuleGroupDialog : Form
 
     private void AddLabeledRow(int y, string labelText, Control control, int controlWidth)
     {
-        Controls.Add(new Label
+        var label = new Label
         {
             Text = labelText,
-            Location = new Point(16, y + 4),
             AutoSize = true,
             ForeColor = SystemColors.GrayText,
-        });
+        };
         control.Location = new Point(110, y);
         control.Size = new Size(controlWidth, control.Height);
         Controls.Add(control);
+        Controls.Add(label);
+        // 标签与控件垂直居中（控件含边框，文字居其中线）
+        label.Location = new Point(16, control.Location.Y + (control.Height - label.Height) / 2 + 1);
     }
 
     private void UpdatePreview()
