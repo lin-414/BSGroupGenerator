@@ -1216,6 +1216,12 @@ public class MainForm : Form
 
     private void OnRules(object? sender, EventArgs e)
     {
+        if (_groups.Count == 0)
+        {
+            MessageBox.Show(this, "还没有任何组：请先「新建组」，再使用规则归组。", "提示",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
         if (_scan is null || _scan.Outfits.Count == 0)
         {
             MessageBox.Show(this, "尚未扫描到任何服装。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);

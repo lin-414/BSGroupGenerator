@@ -60,12 +60,12 @@ public class RuleGroupDialog : Form
         table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        AddRow(0, "目标组", _cboGroup);
+        AddRow(table, 0, "目标组", _cboGroup);
         _cboDirection.Items.AddRange(["加入组", "移出组"]);
         _cboDirection.SelectedIndex = 0;
-        AddRow(1, "方向", _cboDirection);
-        AddRow(2, "包含关键字", _txtInclude);
-        AddRow(3, "排除关键字", _txtExclude);
+        AddRow(table, 1, "方向", _cboDirection);
+        AddRow(table, 2, "包含关键字", _txtInclude);
+        AddRow(table, 3, "排除关键字", _txtExclude);
 
         var checks = new FlowLayoutPanel
         {
@@ -120,9 +120,8 @@ public class RuleGroupDialog : Form
         UpdatePreview();
     }
 
-    private void AddRow(int row, string labelText, Control control)
+    private static void AddRow(TableLayoutPanel table, int row, string labelText, Control control)
     {
-        var table = (TableLayoutPanel)Controls[0];
         table.Controls.Add(new Label
         {
             Text = labelText,
