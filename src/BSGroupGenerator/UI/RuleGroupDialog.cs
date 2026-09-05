@@ -10,8 +10,8 @@ public class RuleGroupDialog : Form
 {
     private readonly ComboBox _cboGroup = new() { DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly ComboBox _cboDirection = new() { DropDownStyle = ComboBoxStyle.DropDownList };
-    private readonly TextBox _txtInclude = new() { PlaceholderText = "多个用分号分隔；留空 = 全部服装" };
-    private readonly TextBox _txtExclude = new() { PlaceholderText = "命中的服装将被排除" };
+    private readonly TextBox _txtInclude = MakePaddedBox("多个用分号分隔；留空 = 全部服装");
+    private readonly TextBox _txtExclude = MakePaddedBox("命中的服装将被排除");
     private readonly CheckBox _chkOwner = new() { Text = "同时匹配所属模组名", AutoSize = true, Checked = true };
     private readonly CheckBox _chkUnassigned = new() { Text = "仅未分配服装", AutoSize = true, Checked = true };
     private readonly Label _lblPreview = new()
@@ -22,6 +22,7 @@ public class RuleGroupDialog : Form
     };
     private readonly ListBox _lstPreview = new()
     {
+        Dock = DockStyle.Fill,
         IntegralHeight = false,
         BorderStyle = BorderStyle.FixedSingle,
     };
@@ -50,53 +51,70 @@ public class RuleGroupDialog : Form
         ShowInTaskbar = false;
         ClientSize = new Size(508, 478);
 
-        // 布局（绝对坐标，列：标签 16-106，控件 110-470）
+        var table = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 7,
+            Padding = new Padding(4),
+        };
+        table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
+        table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        for (var i = 0; i < 5; i++)
+            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        _cboGroup.Width = 364;
+        _cboDirection.Width = 364;
+        AddRow(table, 0, "目标组", _cboGroup);
         _cboDirection.Items.AddRange(["加入组", "移出组"]);
         _cboDirection.SelectedIndex = 0;
-        AddLabeledRow(16, "目标组", _cboGroup, 364);
-        AddLabeledRow(56, "方向", _cboDirection, 364);
-        AddLabeledRow(96, "包含关键字", _txtInclude, 364);
-        AddLabeledRow(136, "排除关键字", _txtExclude, 364);
+        AddRow(table, 1, "方向", _cboDirection);
+        AddRow(table, 2, "包含关键字", PaddedHost(_txtInclude, 364));
+        AddRow(table, 3, "排除关键字", PaddedHost(_txtExclude, 364));
 
-        var lblScope = new Label
+        var checks = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            WrapContents = false,
+            AutoSize = true,
+            Padding = new Padding(0, 4, 0, 0),
+        };
+        _chkOwner.Margin = new Padding(0, 2, 14, 2);
+        _chkUnassigned.Margin = new Padding(0, 2, 0, 2);
+        checks.Controls.AddRange([_chkOwner, _chkUnassigned]);
+        table.Controls.Add(checks, 1, 4);
+        table.Controls.Add(new Label
         {
             Text = "范围",
-            Location = new Point(16, 180),
-            AutoSize = true,
-            ForeColor = SystemColors.GrayText,
-        };
-        _chkOwner.Location = new Point(110, 176);
-        _chkUnassigned.Location = new Point(110, 202);
+            TextAlign = ContentAlignment.MiddleRight,
+            Dock = DockStyle.Fill,
+        }, 0, 4);
 
-        _lblPreview.Location = new Point(16, 242);
-        _lstPreview.Location = new Point(16, 266);
-        _lstPreview.Size = new Size(458, 132);
+        _lblPreview.Margin = new Padding(2, 8, 2, 4);
+        table.Controls.Add(_lblPreview, 0, 5);
+        table.SetColumnSpan(_lblPreview, 2);
+        _lstPreview.Margin = new Padding(2, 0, 2, 6);
+        table.Controls.Add(_lstPreview, 0, 6);
+        table.SetColumnSpan(_lstPreview, 2);
 
-        var btnOk = new Button
+        var buttons = new FlowLayoutPanel
         {
-            Text = "应用",
-            DialogResult = DialogResult.OK,
-            Location = new Point(ClientSize.Width - 188, ClientSize.Height - 44),
-            Size = new Size(90, 30),
-            Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+            Dock = DockStyle.Bottom,
+            Height = 42,
+            FlowDirection = FlowDirection.RightToLeft,
+            Padding = new Padding(4, 6, 4, 4),
         };
-        var btnCancel = new Button
-        {
-            Text = "取消",
-            DialogResult = DialogResult.Cancel,
-            Location = new Point(ClientSize.Width - 90, ClientSize.Height - 44),
-            Size = new Size(80, 30),
-            Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-        };
+        var btnOk = new Button { Text = "应用", MinimumSize = new Size(96, 30), DialogResult = DialogResult.OK };
+        var btnCancel = new Button { Text = "取消", MinimumSize = new Size(80, 30), DialogResult = DialogResult.Cancel };
+        buttons.Controls.Add(btnOk);
+        buttons.Controls.Add(btnCancel);
 
-        Controls.AddRange([_cboGroup, _cboDirection, _txtInclude, _txtExclude, lblScope, _chkOwner,
-            _chkUnassigned, _lblPreview, _lstPreview, btnOk, btnCancel]);
+        Controls.Add(table);
+        Controls.Add(buttons);
         AcceptButton = btnOk;
         CancelButton = btnCancel;
-
-        // 文本框默认没有左内边距，文字会贴着边框：用 EM_SETMARGINS 加 6px 左边距
-        SetLeftMargin(_txtInclude, 6);
-        SetLeftMargin(_txtExclude, 6);
 
         _cboGroup.DataSource = null;
         _cboGroup.DataSource = _groups;
@@ -110,20 +128,47 @@ public class RuleGroupDialog : Form
         UpdatePreview();
     }
 
-    private void AddLabeledRow(int y, string labelText, Control control, int controlWidth)
+    private static void AddRow(TableLayoutPanel table, int row, string labelText, Control control)
     {
-        var label = new Label
+        table.Controls.Add(new Label
         {
             Text = labelText,
-            AutoSize = true,
-            ForeColor = SystemColors.GrayText,
+            TextAlign = ContentAlignment.MiddleRight,
+            Dock = DockStyle.Fill,
+        }, 0, row);
+        control.Margin = new Padding(0, 3, 0, 3);
+        table.Controls.Add(control, 1, row);
+    }
+
+    /// <summary>
+    /// 白色衬底面板承载无边框文本框：左内边距 7px。
+    /// 不用 EM_SETMARGINS 的原因：占位文字自绘不覆盖边距区域，会露出灰色底。
+    /// </summary>
+    private static Panel PaddedHost(TextBox box, int width)
+    {
+        var host = new Panel
+        {
+            Size = new Size(width, 26),
+            BackColor = Color.White,
+            Margin = new Padding(0, 3, 0, 3),
         };
-        control.Location = new Point(110, y);
-        control.Size = new Size(controlWidth, control.Height);
-        Controls.Add(control);
-        Controls.Add(label);
-        // 标签与控件垂直居中（控件含边框，文字居其中线）
-        label.Location = new Point(16, control.Location.Y + (control.Height - label.Height) / 2 + 1);
+        host.Paint += (_, e) => e.Graphics.DrawRectangle(
+            new Pen(Color.FromArgb(213, 216, 224)), 0, 0, host.Width - 1, host.Height - 1);
+        box.BorderStyle = BorderStyle.None;
+        box.Location = new Point(7, 2);
+        box.Size = new Size(width - 12, 22);
+        host.Controls.Add(box);
+        return host;
+    }
+
+    private static TextBox MakePaddedBox(string placeholder)
+    {
+        return new TextBox
+        {
+            BorderStyle = BorderStyle.None,
+            BackColor = Color.White,
+            PlaceholderText = placeholder,
+        };
     }
 
     private void UpdatePreview()
@@ -137,15 +182,5 @@ public class RuleGroupDialog : Form
         if (matched.Count > 30)
             _lstPreview.Items.Add($"… 共 {matched.Count} 个");
         _lstPreview.EndUpdate();
-    }
-
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
-    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
-
-    /// <summary>给单行文本框设置左内边距（EM_SETMARGINS：高字为左边距）。</summary>
-    private static void SetLeftMargin(Control control, int margin)
-    {
-        _ = control.Handle; // 强制创建句柄
-        _ = SendMessage(control.Handle, 0x00D3, (IntPtr)0x1, (IntPtr)(margin << 16));
     }
 }
