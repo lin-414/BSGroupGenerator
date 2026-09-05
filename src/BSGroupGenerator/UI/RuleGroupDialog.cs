@@ -94,6 +94,10 @@ public class RuleGroupDialog : Form
         AcceptButton = btnOk;
         CancelButton = btnCancel;
 
+        // 文本框默认没有左内边距，文字会贴着边框：用 EM_SETMARGINS 加 6px 左边距
+        SetLeftMargin(_txtInclude, 6);
+        SetLeftMargin(_txtExclude, 6);
+
         _cboGroup.DataSource = null;
         _cboGroup.DataSource = _groups;
         _cboGroup.DisplayMember = nameof(SliderGroup.Name);
@@ -133,5 +137,15 @@ public class RuleGroupDialog : Form
         if (matched.Count > 30)
             _lstPreview.Items.Add($"… 共 {matched.Count} 个");
         _lstPreview.EndUpdate();
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
+    /// <summary>给单行文本框设置左内边距（EM_SETMARGINS：高字为左边距）。</summary>
+    private static void SetLeftMargin(Control control, int margin)
+    {
+        _ = control.Handle; // 强制创建句柄
+        _ = SendMessage(control.Handle, 0x00D3, (IntPtr)0x1, (IntPtr)(margin << 16));
     }
 }
