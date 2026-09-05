@@ -10,7 +10,7 @@
     <RootNamespace>BSGroupGenerator</RootNamespace>
     <AssemblyName>BSGroupGenerator</AssemblyName>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Product>BS Group Generator</Product>
     <Authors>lin-414</Authors>
     <RepositoryUrl>https://github.com/lin-414/BSGroupGenerator</RepositoryUrl>
