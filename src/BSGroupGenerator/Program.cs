@@ -19,7 +19,13 @@ internal static class Program
             var dir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BSGroupGenerator");
             Directory.CreateDirectory(dir);
-            File.AppendAllText(Path.Combine(dir, "crash.log"),
+            var crashPath = Path.Combine(dir, "crash.log");
+            if (File.Exists(crashPath) && new FileInfo(crashPath).Length > 512 * 1024)
+            {
+                var text = File.ReadAllText(crashPath);
+                File.WriteAllText(crashPath, text[(text.Length / 2)..]); // 超过 512KB 保留后半
+            }
+            File.AppendAllText(crashPath,
                 $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {(isFatal ? "致命" : "UI")}异常：\n{ex}\n\n");
         }
         catch

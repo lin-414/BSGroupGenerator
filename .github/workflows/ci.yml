@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 构建
+        run: dotnet build src/BSGroupGenerator/BSGroupGenerator.csproj -c Release
+
+      - name: 测试
+        run: dotnet test tests/BSGroupGenerator.Tests/BSGroupGenerator.Tests.csproj -c Release
