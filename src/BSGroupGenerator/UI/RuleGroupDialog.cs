@@ -8,16 +8,20 @@ namespace BSGroupGenerator.UI;
 /// </summary>
 public class RuleGroupDialog : Form
 {
-    private readonly ComboBox _cboGroup = new() { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
-    private readonly ComboBox _cboDirection = new() { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
-    private readonly TextBox _txtInclude = new() { Dock = DockStyle.Fill, PlaceholderText = "多个用分号分隔；留空 = 全部服装" };
-    private readonly TextBox _txtExclude = new() { Dock = DockStyle.Fill, PlaceholderText = "命中的服装将被排除" };
+    private readonly ComboBox _cboGroup = new() { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox _cboDirection = new() { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly TextBox _txtInclude = new() { PlaceholderText = "多个用分号分隔；留空 = 全部服装" };
+    private readonly TextBox _txtExclude = new() { PlaceholderText = "命中的服装将被排除" };
     private readonly CheckBox _chkOwner = new() { Text = "同时匹配所属模组名", AutoSize = true, Checked = true };
-    private readonly CheckBox _chkUnassigned = new() { Text = "仅未分配服装（已入组的不动）", AutoSize = true, Checked = true };
-    private readonly Label _lblPreview = new() { AutoSize = true, ForeColor = SystemColors.GrayText };
+    private readonly CheckBox _chkUnassigned = new() { Text = "仅未分配服装", AutoSize = true, Checked = true };
+    private readonly Label _lblPreview = new()
+    {
+        Text = "将命中 0 个服装：",
+        AutoSize = true,
+        ForeColor = SystemColors.GrayText,
+    };
     private readonly ListBox _lstPreview = new()
     {
-        Dock = DockStyle.Fill,
         IntegralHeight = false,
         BorderStyle = BorderStyle.FixedSingle,
     };
@@ -43,68 +47,50 @@ public class RuleGroupDialog : Form
         StartPosition = FormStartPosition.CenterParent;
         MinimizeBox = false;
         MaximizeBox = false;
-        ClientSize = new Size(500, 470);
         ShowInTaskbar = false;
+        ClientSize = new Size(508, 478);
 
-        var table = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 2,
-            RowCount = 7,
-            Padding = new Padding(4),
-        };
-        table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
-        table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        for (var i = 0; i < 5; i++)
-            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-        AddRow(table, 0, "目标组", _cboGroup);
+        // 布局（绝对坐标，列：标签 16-106，控件 110-470）
         _cboDirection.Items.AddRange(["加入组", "移出组"]);
         _cboDirection.SelectedIndex = 0;
-        AddRow(table, 1, "方向", _cboDirection);
-        AddRow(table, 2, "包含关键字", _txtInclude);
-        AddRow(table, 3, "排除关键字", _txtExclude);
+        AddLabeledRow(16, "目标组", _cboGroup, 364);
+        AddLabeledRow(56, "方向", _cboDirection, 364);
+        AddLabeledRow(96, "包含关键字", _txtInclude, 364);
+        AddLabeledRow(136, "排除关键字", _txtExclude, 364);
 
-        var checks = new FlowLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            WrapContents = false,
-            Padding = new Padding(0, 4, 0, 0),
-        };
-        _chkOwner.Margin = new Padding(0, 2, 14, 2);
-        _chkUnassigned.Margin = new Padding(0, 2, 0, 2);
-        checks.Controls.AddRange([_chkOwner, _chkUnassigned]);
-        table.Controls.Add(checks, 1, 4);
-        table.Controls.Add(new Label
+        var lblScope = new Label
         {
             Text = "范围",
-            TextAlign = ContentAlignment.MiddleRight,
-            Dock = DockStyle.Fill,
-        }, 0, 4);
-
-        _lblPreview.Margin = new Padding(2, 8, 2, 4);
-        table.Controls.Add(_lblPreview, 0, 5);
-        table.SetColumnSpan(_lblPreview, 2);
-        _lstPreview.Margin = new Padding(2, 0, 2, 6);
-        table.Controls.Add(_lstPreview, 0, 6);
-        table.SetColumnSpan(_lstPreview, 2);
-
-        var buttons = new FlowLayoutPanel
-        {
-            Dock = DockStyle.Bottom,
-            Height = 42,
-            FlowDirection = FlowDirection.RightToLeft,
-            Padding = new Padding(4, 6, 4, 4),
+            Location = new Point(16, 180),
+            AutoSize = true,
+            ForeColor = SystemColors.GrayText,
         };
-        var btnOk = new Button { Text = "应用", MinimumSize = new Size(96, 30), DialogResult = DialogResult.OK };
-        var btnCancel = new Button { Text = "取消", MinimumSize = new Size(80, 30), DialogResult = DialogResult.Cancel };
-        buttons.Controls.Add(btnOk);
-        buttons.Controls.Add(btnCancel);
+        _chkOwner.Location = new Point(110, 176);
+        _chkUnassigned.Location = new Point(110, 202);
 
-        Controls.Add(table);
-        Controls.Add(buttons);
+        _lblPreview.Location = new Point(16, 242);
+        _lstPreview.Location = new Point(16, 266);
+        _lstPreview.Size = new Size(458, 132);
+
+        var btnOk = new Button
+        {
+            Text = "应用",
+            DialogResult = DialogResult.OK,
+            Location = new Point(ClientSize.Width - 188, ClientSize.Height - 44),
+            Size = new Size(90, 30),
+            Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+        };
+        var btnCancel = new Button
+        {
+            Text = "取消",
+            DialogResult = DialogResult.Cancel,
+            Location = new Point(ClientSize.Width - 90, ClientSize.Height - 44),
+            Size = new Size(80, 30),
+            Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+        };
+
+        Controls.AddRange([_cboGroup, _cboDirection, _txtInclude, _txtExclude, lblScope, _chkOwner,
+            _chkUnassigned, _lblPreview, _lstPreview, btnOk, btnCancel]);
         AcceptButton = btnOk;
         CancelButton = btnCancel;
 
@@ -120,16 +106,18 @@ public class RuleGroupDialog : Form
         UpdatePreview();
     }
 
-    private static void AddRow(TableLayoutPanel table, int row, string labelText, Control control)
+    private void AddLabeledRow(int y, string labelText, Control control, int controlWidth)
     {
-        table.Controls.Add(new Label
+        Controls.Add(new Label
         {
             Text = labelText,
-            TextAlign = ContentAlignment.MiddleRight,
-            Dock = DockStyle.Fill,
-        }, 0, row);
-        control.Margin = new Padding(0, 3, 0, 3);
-        table.Controls.Add(control, 1, row);
+            Location = new Point(16, y + 4),
+            AutoSize = true,
+            ForeColor = SystemColors.GrayText,
+        });
+        control.Location = new Point(110, y);
+        control.Size = new Size(controlWidth, control.Height);
+        Controls.Add(control);
     }
 
     private void UpdatePreview()
