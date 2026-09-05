@@ -1227,9 +1227,10 @@ public class MainForm : Form
             MessageBox.Show(this, "尚未扫描到任何服装。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
-        using var dialog = new RuleGroupDialog(_groups,
+        var ownerMap = OwnerByOutfit();
+        using var dialog = new RuleGroupDialog(_groups, CurrentGroup?.Name, ownerMap,
             (include, exclude, matchOwner, unassignedOnly) =>
-                RuleMatchPreview(include, exclude, matchOwner, unassignedOnly));
+                RuleMatchPreview(ownerMap, include, exclude, matchOwner, unassignedOnly));
         if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
 
@@ -1245,11 +1246,13 @@ public class MainForm : Form
         UpdateCounts();
     }
 
-    private List<string> RuleMatchPreview(string include, string exclude, bool matchOwner, bool unassignedOnly)
+    private List<string> RuleMatchPreview(Dictionary<string, string> ownerByOutfit,
+        string include, string exclude, bool matchOwner, bool unassignedOnly)
     {
+        if (_scan is null)
+            return [];
         var includeKw = GroupRules.SplitKeywords(include);
         var excludeKw = GroupRules.SplitKeywords(exclude);
-        var ownerByOutfit = OwnerByOutfit();
         return _scan.Outfits
             .Where(o => RuleHits(o.Name, ownerByOutfit, includeKw, excludeKw, matchOwner, unassignedOnly))
             .Select(o => o.Name)
@@ -1266,6 +1269,8 @@ public class MainForm : Form
         var excludeKw = GroupRules.SplitKeywords(exclude);
         var ownerByOutfit = OwnerByOutfit();
         Snapshot();
+        if (_scan is null)
+            return -1;
 
         var applied = 0;
         foreach (var outfit in _scan.Outfits)

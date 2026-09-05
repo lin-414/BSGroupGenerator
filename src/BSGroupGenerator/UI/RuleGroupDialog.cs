@@ -5,6 +5,7 @@ namespace BSGroupGenerator.UI;
 /// <summary>
 /// 规则归组对话框：按包含/排除关键字批量把服装加入或移出某个组，
 /// 支持同时匹配所属模组名、仅处理未分配服装，并实时预览命中数量。
+/// 预览计算带 300ms 防抖；所属模组映射在打开时构建一次。
 /// </summary>
 public class RuleGroupDialog : Form
 {
@@ -26,8 +27,10 @@ public class RuleGroupDialog : Form
         IntegralHeight = false,
         BorderStyle = BorderStyle.FixedSingle,
     };
+    private readonly System.Windows.Forms.Timer _previewDebounce = new() { Interval = 300 };
 
     private readonly IReadOnlyList<SliderGroup> _groups;
+    private readonly Dictionary<string, string> _ownerByOutfit;
     private readonly Func<string, string, bool, bool, List<string>> _preview;
 
     public string GroupName => (_cboGroup.SelectedItem as SliderGroup)?.Name ?? "";
@@ -37,10 +40,12 @@ public class RuleGroupDialog : Form
     public bool MatchOwner => _chkOwner.Checked;
     public bool UnassignedOnly => _chkUnassigned.Checked;
 
-    public RuleGroupDialog(IReadOnlyList<SliderGroup> groups,
+    public RuleGroupDialog(IReadOnlyList<SliderGroup> groups, string? preselectGroupName,
+        Dictionary<string, string> ownerByOutfit,
         Func<string, string, bool, bool, List<string>> preview)
     {
         _groups = groups;
+        _ownerByOutfit = ownerByOutfit;
         _preview = preview;
 
         Text = "规则归组";
@@ -67,9 +72,9 @@ public class RuleGroupDialog : Form
 
         _cboGroup.Width = 364;
         _cboDirection.Width = 364;
-        AddRow(table, 0, "目标组", _cboGroup);
         _cboDirection.Items.AddRange(["加入组", "移出组"]);
         _cboDirection.SelectedIndex = 0;
+        AddRow(table, 0, "目标组", _cboGroup);
         AddRow(table, 1, "方向", _cboDirection);
         AddRow(table, 2, "包含关键字", PaddedHost(_txtInclude, 364));
         AddRow(table, 3, "排除关键字", PaddedHost(_txtExclude, 364));
@@ -119,12 +124,19 @@ public class RuleGroupDialog : Form
         _cboGroup.DataSource = null;
         _cboGroup.DataSource = _groups;
         _cboGroup.DisplayMember = nameof(SliderGroup.Name);
+        if (preselectGroupName is not null)
+            _cboGroup.SelectedItem = _groups.FirstOrDefault(g => g.Name == preselectGroupName);
 
-        EventHandler changed = (_, _) => UpdatePreview();
+        EventHandler changed = (_, _) => { _previewDebounce.Stop(); _previewDebounce.Start(); };
         _txtInclude.TextChanged += changed;
         _txtExclude.TextChanged += changed;
         _chkOwner.CheckedChanged += changed;
         _chkUnassigned.CheckedChanged += changed;
+        _previewDebounce.Tick += (_, _) =>
+        {
+            _previewDebounce.Stop();
+            UpdatePreview();
+        };
         UpdatePreview();
     }
 
