@@ -11,8 +11,10 @@ public partial class SaveSuccessWindow : Window
     private readonly string _dir;
     private readonly string? _bsAppDir;
 
+    /// <summary>targetDescription 来自 ResolveTargetDescription()（可空：有效项目路径或 BodySlide 目录
+    /// 未能解析时返回 null）。它只作为 {3} 的格式化实参，null 会被渲染成空串，故此处声明为可空。</summary>
     public SaveSuccessWindow(int groupCount, string dir, string examples, int memberCount,
-        string targetDescription, string? bsAppDir, bool customNote)
+        string? targetDescription, string? bsAppDir, bool customNote)
     {
         InitializeComponent();
         _dir = dir;

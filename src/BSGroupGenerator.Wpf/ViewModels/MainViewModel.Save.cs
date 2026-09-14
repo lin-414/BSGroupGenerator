@@ -28,8 +28,8 @@ public partial class MainViewModel
     public event Action<NewModsRequest>? NewModsDetected;
     /// <summary>保存成功后触发，视图显示带"打开输出目录"的完成弹窗。</summary>
     public event Action<string, string?>? SaveCompleted;
-    /// <summary>发现新版本（启动静默检查 / 手动检查命中）。</summary>
-    public event Action<string, string>? UpdateAvailable;
+    // 曾有一个 UpdateAvailable 事件，视图订阅了却从未被触发——更新提示实际走
+    // CheckForUpdatesAsync 里的 ConfirmHandler。已删除该事件与视图侧的订阅。
 
     private (string Dir, string Description)? _lastTarget;
 

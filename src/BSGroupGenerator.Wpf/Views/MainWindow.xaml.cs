@@ -31,12 +31,7 @@ public partial class MainWindow : Window
         _vm.FilePicker = _ => PickImportFile();
         _vm.NewModsDetected += request => Dispatcher.Invoke(() => ShowNewMods(request));
         _vm.SaveCompleted += (dir, bsAppDir) => Dispatcher.Invoke(() => ShowSaveSuccess(dir, bsAppDir));
-        _vm.UpdateAvailable += (tag, current) => Dispatcher.Invoke(() =>
-        {
-            if (MessageBox.Show(this, L10n.TrF("L.Msg_UpdateAvailable", tag, current),
-                    L10n.Tr("L.Title_CheckUpdate"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-                MainViewModel.OpenUrl("https://github.com/lin-414/BSGroupGenerator/releases/latest");
-        });
+        // 更新提示不在这里订阅：CheckForUpdatesAsync 内部用 ConfirmHandler 弹确认框并打开下载页
 
         _vm.PropertyChanged += (_, e) =>
         {

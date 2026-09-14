@@ -31,6 +31,8 @@ public static class L10n
     public static string Tr(string key) =>
         Application.Current?.Resources[key] as string ?? key;
 
-    public static string TrF(string key, params object[] args) =>
-        string.Format(Tr(key), args);
+    /// <summary>取词 + 格式化。参数用 object?（而非 object）：格式化实参允许为 null，
+    /// string.Format 会把它渲染成空串；若声明为非空 object，所有传入可空值的调用点都会报 CS8604。</summary>
+    public static string TrF(string key, params object?[] args) =>
+        string.Format(Tr(key), args ?? []);
 }

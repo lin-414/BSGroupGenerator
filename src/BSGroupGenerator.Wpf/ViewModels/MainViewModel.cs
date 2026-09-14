@@ -36,10 +36,10 @@ public partial class MainViewModel : ObservableObject
     private bool _closed;
     private string? _bsAppDir;
 
-    public event Action<string, string, bool>? Notify;   // (title, message, warning)
-    public event Action<string, string, bool>? Confirm;  // 预留
-    public event Action? RequestClose;                    // 诊断等
-
+    // 视图交互统一走「视图注入委托」这一套：下面的 NotifyHandler，以及 Save.cs 里的
+    // ConfirmHandler / FolderPicker / FilePicker，由 MainWindow 构造时赋值。
+    // 曾并存一组 Notify / Confirm / RequestClose 事件，从未被触发（CS0067 可证），已删除，
+    // 免得两套机制并存时看错哪套在生效。
     public Func<string, string, bool, bool>? NotifyHandler { get; set; } // 视图注入：MessageBox 包装 (title, message, warning)
 
     public void NotifyUser(string title, string message, bool warning = false) =>
@@ -195,7 +195,10 @@ public partial class MainViewModel : ObservableObject
         Settings.Save();
         var profiles = value.GetProfiles();
         Profiles = new ObservableCollection<string>(profiles);
-        var preferred = profiles.Contains(Settings.LastProfile) ? Settings.LastProfile : profiles.FirstOrDefault();
+        // List<string>.Contains 只接受非空 string；LastProfile 是 string?，须先判空
+        //（原写法 profiles.Contains(null) 恒为 false，行为不变，但会报 CS8604）
+        var last = Settings.LastProfile;
+        var preferred = last is not null && profiles.Contains(last) ? last : profiles.FirstOrDefault();
         SelectedProfile = preferred;
     }
 

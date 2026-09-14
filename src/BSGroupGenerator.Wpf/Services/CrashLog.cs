@@ -33,11 +33,11 @@ public static class CrashLog
         Write(ex, isFatal);
         // 文案走 L10n：崩溃处理器可能在 Application 已拆解后才触发，
         // Tr/TrF 在无 Application 上下文时回落到键名，不会二次抛异常。
-        // 异常消息里的花括号必须先转义——TrF 内部是 string.Format，
-        // 在"处理未处理异常"的地方再抛 FormatException 会直接杀掉进程。
-        var message = (ex?.Message ?? "").Replace("{", "{{").Replace("}", "}}");
+        // 异常消息直接作为 TrF 的实参传入即可，不要转义花括号——string.Format 只解析
+        // 格式串（即资源值），实参里的花括号是字面量，转义反而会在弹框里显示成 {{ }}。
+        // 真正的风险在资源值本身含不配对的括号，已由 wpf-l10n-verify 的格式串校验拦截。
         System.Windows.MessageBox.Show(
-            L10n.TrF(isFatal ? "L.Crash_Fatal" : "L.Crash_NonFatal", message),
+            L10n.TrF(isFatal ? "L.Crash_Fatal" : "L.Crash_NonFatal", ex?.Message ?? ""),
             L10n.Tr(isFatal ? "L.Title_Error" : "L.Title_Tip"),
             System.Windows.MessageBoxButton.OK,
             isFatal ? System.Windows.MessageBoxImage.Error : System.Windows.MessageBoxImage.Warning);
