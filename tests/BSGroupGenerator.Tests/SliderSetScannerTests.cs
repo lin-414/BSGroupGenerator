@@ -79,6 +79,27 @@ public class SliderSetScannerTests
     }
 
     [Fact]
+    public void DuplicateSetNamesWithinSameLayerResolveDeterministically()
+    {
+        using var temp = new TempDir();
+        var gameData = temp.Sub("Data");
+        var modA = temp.Sub("mods", "A");
+
+        // 同一模组内两个文件定义同名滑块组：层内按相对路径字面序取先者，不依赖文件系统枚举顺序
+        temp.File("mods", "A", "CalienteTools", "BodySlide", "SliderSets", "B.xml", SliderSetXml("Dup", "B1"));
+        temp.File("mods", "A", "CalienteTools", "BodySlide", "SliderSets", "A.xml", SliderSetXml("Dup", "A1"));
+
+        var mods = new List<(ModEntry, string)> { (new ModEntry("A", true, false, false, 0), modA) };
+        var result = SliderSetScanner.Scan(VirtualResolution(gameData, @"CalienteTools\BodySlide"), mods);
+
+        Assert.Equal(3, result.Outfits.Count);
+        var dup = result.Outfits.First(o => o.Name == "Dup");
+        Assert.True(dup.HasConflict);
+        Assert.Equal("A.xml", Path.GetFileName(dup.SourceFile));
+        Assert.Equal("A", dup.OwnerLabel);
+    }
+
+    [Fact]
     public void ParsesOspAndSkipsBrokenFiles()
     {
         using var temp = new TempDir();

@@ -101,6 +101,10 @@ public static class SliderSetScanner
                 continue;
             }
 
+            // 层内文件顺序决定同名滑块组的归属（先见者胜），必须确定：显式按相对路径排序，
+            // 对齐 BodySlide 的 wxDir::GetAllFiles 在 NTFS 上返回的字面序，避免依赖文件系统枚举顺序。
+            files.Sort(StringComparer.OrdinalIgnoreCase);
+
             foreach (var file in files)
             {
                 var rel = BodySlideLocator.GetSuffixUnder(file, dir);
