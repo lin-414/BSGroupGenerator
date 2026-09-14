@@ -4,7 +4,9 @@
 
 BodySlide 自带的 Group Manager 只有一个服装平铺列表，不知道哪个服装来自哪个模组；本工具补上这一环：**按模组勾选，一键整组归组**，也能展开后逐个服装微调。
 
-界面为 WPF，自带**暗色 / 亮色**两套主题，支持**中文 / English** 切换（「设置」菜单内即时生效）。
+界面为 WPF，自带**暗色 / 亮色**两套主题，支持**中文 / English** 切换（菜单栏顶层的「界面主题」「语言」即时生效）。
+
+**运行要求**：Windows x64 + [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0)。发布包为**框架依赖**版（6 个文件、约 0.6 MB），不含运行时，首次使用请先安装上面的运行时。
 
 ## 使用方法
 
@@ -62,7 +64,8 @@ BodySlide 自带的 Group Manager 只有一个服装平铺列表，不知道哪�
 dotnet build src/BSGroupGenerator.Wpf/BSGroupGenerator.Wpf.csproj
 dotnet test tests/BSGroupGenerator.Tests/BSGroupGenerator.Tests.csproj
 dotnet test tests/BSGroupGenerator.Wpf.Tests/BSGroupGenerator.Wpf.Tests.csproj
-publish.ps1 -SelfContained   # 生成 dist-wpf\（自包含目录，用户无需安装任何依赖）
+publish.ps1                  # 生成 dist-wpf\（框架依赖，6 个文件约 0.6 MB，需 .NET 10 Desktop Runtime）
+publish.ps1 -SelfContained   # 生成 dist-wpf\（自包含，约 133 MB，用户无需安装任何依赖）
 ```
 
 - 技术栈：C# / .NET 10 WPF（界面）+ 纯 C# Core 类库（扫描/解析/读写），仅第三方依赖 CommunityToolkit.Mvvm。
