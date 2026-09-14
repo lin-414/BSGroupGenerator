@@ -70,7 +70,7 @@ public partial class MainWindow : Window
         };
     }
 
-    // ── 界面主题（设置菜单）──────────────────────────────────────────────
+    // ── 界面主题（菜单栏顶层「界面主题」）──────────────────────────────────
     private void SyncThemeChecks()
     {
         MiThemeBoutique.IsChecked = ThemeManager.Current == ThemeManager.Boutique;
@@ -87,7 +87,7 @@ public partial class MainWindow : Window
         SyncThemeChecks();
     }
 
-    // ── 界面语言（设置菜单）──────────────────────────────────────────────
+    // ── 界面语言（菜单栏顶层「语言」）────────────────────────────────────
     private void SyncLangChecks()
     {
         MiLangZh.IsChecked = L10n.Current == L10n.Zh;

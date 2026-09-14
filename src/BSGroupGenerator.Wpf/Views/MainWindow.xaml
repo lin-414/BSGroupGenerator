@@ -23,18 +23,18 @@
                 <MenuItem Header="{DynamicResource L.Menu_CleanupStale}" Command="{Binding CleanupStaleMembersCommand}" />
                 <MenuItem Header="{DynamicResource L.Menu_RulePresets}" Click="RulePresets_Click" />
             </MenuItem>
+            <!-- 主题与语言提到顶层：点一下菜单栏即展开，不必先进「设置」 -->
+            <MenuItem Header="{DynamicResource L.Menu_Theme}">
+                <MenuItem x:Name="MiThemeBoutique" Header="{DynamicResource L.Theme_Dark}" Tag="boutique"
+                          IsCheckable="True" Click="Theme_Click" />
+                <MenuItem x:Name="MiThemeLight" Header="{DynamicResource L.Theme_Light}" Tag="light"
+                          IsCheckable="True" Click="Theme_Click" />
+            </MenuItem>
+            <MenuItem Header="{DynamicResource L.Menu_Language}">
+                <MenuItem x:Name="MiLangZh" Header="中文" Tag="zh" IsCheckable="True" Click="Lang_Click" />
+                <MenuItem x:Name="MiLangEn" Header="English" Tag="en" IsCheckable="True" Click="Lang_Click" />
+            </MenuItem>
             <MenuItem Header="{DynamicResource L.Menu_Settings}">
-                <MenuItem Header="{DynamicResource L.Menu_Theme}">
-                    <MenuItem x:Name="MiThemeBoutique" Header="{DynamicResource L.Theme_Dark}" Tag="boutique"
-                              IsCheckable="True" Click="Theme_Click" />
-                    <MenuItem x:Name="MiThemeLight" Header="{DynamicResource L.Theme_Light}" Tag="light"
-                              IsCheckable="True" Click="Theme_Click" />
-                </MenuItem>
-                <MenuItem Header="{DynamicResource L.Menu_Language}">
-                    <MenuItem x:Name="MiLangZh" Header="中文" Tag="zh" IsCheckable="True" Click="Lang_Click" />
-                    <MenuItem x:Name="MiLangEn" Header="English" Tag="en" IsCheckable="True" Click="Lang_Click" />
-                </MenuItem>
-                <Separator />
                 <MenuItem Header="{DynamicResource L.Menu_CheckUpdate}" Click="CheckUpdate_Click" />
                 <MenuItem Header="{DynamicResource L.Menu_Help}" Click="Help_Click" />
                 <MenuItem Header="{DynamicResource L.Menu_About}" Click="About_Click" />
