@@ -140,4 +140,80 @@ public class SliderSetScannerTests
         Assert.Single(result.Outfits);
         Assert.Equal("CBBE Body", result.Outfits[0].Name);
     }
+
+    /// <summary>
+    /// 解析阶段是并行的，但"同名滑块组先见者胜"依赖文件顺序。用跨文件重名 + 多种并行度断言：
+    /// 结果必须与顺序实现完全一致，**包括 Outfits 的出现顺序**（它就是归属判定的落点）。
+    /// 若把并行改成"边解析边写共享字典"，这里会随线程调度而变，从而暴露问题。
+    /// </summary>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(8)]
+    public void ParallelParsingKeepsFirstSeenWinsOrder(int parallelism)
+    {
+        using var temp = new TempDir();
+        var gameData = temp.Sub("Data");
+        var modA = temp.Sub("mods", "A");
+        var modB = temp.Sub("mods", "B");
+
+        // 12 个文件，名字空间故意重叠，制造大量跨文件重名
+        for (var i = 0; i < 6; i++)
+        {
+            var shared = $"Shared{i % 3:D2}";
+            temp.File("mods", "A", "CalienteTools", "BodySlide", "SliderSets", $"A{i:D2}.xml",
+                SliderSetXml(shared, $"A{i:D2}"));
+            temp.File("mods", "B", "CalienteTools", "BodySlide", "SliderSets", $"B{i:D2}.xml",
+                SliderSetXml(shared, $"B{i:D2}"));
+        }
+
+        var mods = new List<(ModEntry, string)>
+        {
+            (new ModEntry("A", true, false, false, 0), modA),
+            (new ModEntry("B", true, false, false, 1), modB),
+        };
+        var resolution = VirtualResolution(gameData, @"CalienteTools\BodySlide");
+
+        var baseline = SliderSetScanner.Scan(resolution, mods, progress: null, parseParallelism: 1);
+        var actual = SliderSetScanner.Scan(resolution, mods, progress: null, parseParallelism: parallelism);
+
+        Assert.Equal(baseline.Outfits.Select(o => o.Name), actual.Outfits.Select(o => o.Name));
+        Assert.Equal(baseline.Outfits.Select(o => o.OwnerLabel), actual.Outfits.Select(o => o.OwnerLabel));
+        Assert.Equal(baseline.Outfits.Select(o => o.SourceFile), actual.Outfits.Select(o => o.SourceFile));
+        Assert.Equal(baseline.Outfits.Select(o => o.HasConflict), actual.Outfits.Select(o => o.HasConflict));
+        // 重名确实被触发，否则这个用例什么都没测到
+        Assert.Contains(actual.Outfits, o => o.HasConflict);
+    }
+
+    /// <summary>
+    /// 损坏文件**不贡献任何名字**（半途读到的也不能留下），且只留一条警告——
+    /// 与改用 XmlReader 之前 XDocument.Load 一次性失败的语义一致。
+    /// </summary>
+    [Fact]
+    public void BrokenFileContributesNothingAndWarnsOnce()
+    {
+        using var temp = new TempDir();
+        var broken = temp.File("broken.xml",
+            "<SliderSetInfo><SliderSet name=\"ReadBeforeFailure\"><SliderSet name='Unfinished");
+
+        var warnings = new List<string>();
+        var names = SliderSetScanner.ParseSliderSetNames(broken, warnings).ToList();
+
+        Assert.Empty(names);
+        Assert.Single(warnings);
+        Assert.Contains("broken.xml", warnings[0]);
+    }
+
+    /// <summary>带命名空间的 &lt;SliderSet&gt; 不算命中，对齐原实现 DescendantsAndSelf("SliderSet") 的匹配范围。</summary>
+    [Fact]
+    public void NamespacedSliderSetIsIgnored()
+    {
+        using var temp = new TempDir();
+        var file = temp.File("ns.xml",
+            "<?xml version=\"1.0\"?>\n<Root xmlns=\"urn:example\">\n    <SliderSet name=\"Ignored\"/>\n</Root>\n");
+
+        var warnings = new List<string>();
+        Assert.Empty(SliderSetScanner.ParseSliderSetNames(file, warnings).ToList());
+        Assert.Empty(warnings);
+    }
 }
