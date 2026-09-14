@@ -136,6 +136,7 @@
     <sys:String x:Key="L.Log_OutputDir">Output folder: {0} ({1})</sys:String>
     <sys:String x:Key="L.Log_LegacyRemoved">Removed legacy single file: {0}</sys:String>
     <sys:String x:Key="L.Log_OldRemoved">Removed stale group file: {0}</sys:String>
+    <sys:String x:Key="L.Log_ManifestEntrySkipped">Skipped invalid manifest entry (not a bare file name, nothing deleted): {0}</sys:String>
     <sys:String x:Key="L.Log_WriteFail">Write failed: {0}</sys:String>
     <sys:String x:Key="L.Log_Saved">Saved {1} group file(s) under {0} ({2} member(s), {3}).</sys:String>
     <sys:String x:Key="L.Log_NewModsFound">Found {0} new outfit mod(s): {1}{2}</sys:String>

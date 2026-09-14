@@ -59,6 +59,25 @@ public static class SliderGroupFile
         return name + ".xml";
     }
 
+    /// <summary>
+    /// 清单条目是否是"裸文件名"，即 <c>Path.Combine(dir, entry)</c> 必定落在 dir 之内。
+    /// 清单（<see cref="ManifestFileName"/>）是输出目录里的纯文本文件，用户或其它程序都可能改写它，
+    /// 因此其中的字符串不能直接当路径用：<c>Path.Combine(dir, "D:\x")</c> 会**丢弃 dir**，
+    /// <c>Path.Combine(dir, "..\..\x")</c> 能越出输出目录，<c>Path.Combine(dir, "D:x")</c>（驱动器相对
+    /// 路径）则按 D 盘当前目录解析——三种都会让删除动作落到输出目录之外。
+    /// 本工具自己写出的条目必然通过本校验（<see cref="FileNameForGroup"/> 已把 Windows 非法字符
+    /// 换成下划线，其中含 \ / :），所以收紧不会影响正常清理。
+    /// </summary>
+    public static bool IsBareFileName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name is "." or "..")
+            return false;
+        // 显式列举而不是用 Path.GetFileName(name) == name：后者的行为取决于运行平台的分隔符定义
+        //（Unix 上反斜杠不是分隔符，"C:\x" 会被判成裸名）。清单是磁盘上的文件，只按最严的
+        // Windows 规则判才安全，也让单测在任何平台上结论一致。
+        return name.IndexOfAny(['\\', '/', ':']) < 0;
+    }
+
     public static bool TryLoad(string path, out List<SliderGroup> groups, out string error)
     {
         groups = new List<SliderGroup>();

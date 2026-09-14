@@ -136,6 +136,7 @@
     <sys:String x:Key="L.Log_OutputDir">输出目录：{0}（{1}）</sys:String>
     <sys:String x:Key="L.Log_LegacyRemoved">已删除旧版单文件：{0}</sys:String>
     <sys:String x:Key="L.Log_OldRemoved">已删除旧分组文件：{0}</sys:String>
+    <sys:String x:Key="L.Log_ManifestEntrySkipped">跳过清单中的非法条目（不是裸文件名，未删除）：{0}</sys:String>
     <sys:String x:Key="L.Log_WriteFail">写入失败：{0}</sys:String>
     <sys:String x:Key="L.Log_Saved">已保存 {0} 下 {1} 个组文件（共 {2} 个成员，{3}）。</sys:String>
     <sys:String x:Key="L.Log_NewModsFound">发现 {0} 个新服装模组：{1}{2}</sys:String>

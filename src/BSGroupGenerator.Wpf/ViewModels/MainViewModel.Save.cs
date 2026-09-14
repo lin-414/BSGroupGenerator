@@ -162,6 +162,14 @@ public partial class MainViewModel
                     var old = line.Trim();
                     if (old.Length == 0 || groupByFile.ContainsKey(old))
                         continue;
+                    // 清单是输出目录里的纯文本文件，可能被用户或其它程序改写，条目不能直接当路径用：
+                    // Path.Combine(dir, 绝对路径) 会丢弃 dir，含 ..\ 或 C: 的条目能落到输出目录之外。
+                    // 校验不通过就跳过并记日志——最坏结果是留下一个陈旧分组文件，代价远低于误删用户文件。
+                    if (!SliderGroupFile.IsBareFileName(old))
+                    {
+                        Log(L10n.TrF("L.Log_ManifestEntrySkipped", old));
+                        continue;
+                    }
                     try
                     {
                         File.Delete(Path.Combine(dir, old));

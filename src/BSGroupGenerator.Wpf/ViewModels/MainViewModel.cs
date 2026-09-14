@@ -412,8 +412,9 @@ public partial class MainViewModel : ObservableObject
             {
                 filesToLoad.AddRange(File.ReadAllLines(manifestPath)
                     .Select(line => line.Trim())
-                    .Where(line => line.Length > 0 &&
-                                   line.IndexOf('/') < 0 && line.IndexOf('\\') < 0)
+                    // 清单内容不可信（用户/其它程序可改写），只接受裸文件名——与保存侧的删除守卫
+                    // 用同一个谓词，避免读写两侧对"合法条目"的定义漂移
+                    .Where(SliderGroupFile.IsBareFileName)
                     .Select(line => Path.Combine(targetDir, line))
                     .Where(File.Exists));
             }
