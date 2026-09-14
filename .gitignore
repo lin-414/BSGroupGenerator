@@ -1,0 +1,9 @@
+bin/
+obj/
+dist/
+dist-wpf/
+.vs/
+*.user
+
+# 本地截图（含个人模组列表，不入库）
+*.png

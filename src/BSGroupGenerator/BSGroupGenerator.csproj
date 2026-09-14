@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>BSGroupGenerator</RootNamespace>
+    <AssemblyName>BSGroupGenerator.Core</AssemblyName>
+    <Version>0.1.0</Version>
+    <Product>BS Group Generator</Product>
+    <Authors>lin-414</Authors>
+    <RepositoryUrl>https://github.com/lin-414/BSGroupGenerator</RepositoryUrl>
+    <Description>读取 Mod Organizer 2 安装的模组，为 BodySlide 批量生成服装分组（SliderGroups）文件。</Description>
+  </PropertyGroup>
+
+</Project>

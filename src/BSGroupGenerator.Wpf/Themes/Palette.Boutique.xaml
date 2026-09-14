@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ── 暗色色板「Boutique 暗色」（Gruvbox/Kanagawa 风，仿 lin-414/boutique：深灰三层表面 + 鼠尾草绿主色 + 暖米色文字）──
+         对比度已核对（对 Panel 1A1B1F / Card 282A32）：Text ECE0C8 ≈ 12:1，TextDim B8B2A7 ≈ 8:1，
+         Member 8EC07C ≈ 8:1，Conflict 6D9BB5 ≈ 5.7:1，Danger E67E80 ≈ 6.2:1，AccentText 7FB09D ≈ 7:1；
+         Accent 4D7A6D 作按钮底配白字 ≈ 5.1:1 -->
+    <Color x:Key="C.Window">#121214</Color>
+    <Color x:Key="C.Scrim">#C0121214</Color>
+    <Color x:Key="C.Panel">#1A1B1F</Color>
+    <Color x:Key="C.Card">#282A32</Color>
+    <Color x:Key="C.Border">#3A3D48</Color>
+    <Color x:Key="C.BorderSoft">#2A2C34</Color>
+    <Color x:Key="C.Text">#ECE0C8</Color>
+    <Color x:Key="C.TextDim">#B8B2A7</Color>
+    <Color x:Key="C.Accent">#4D7A6D</Color>
+    <Color x:Key="C.AccentHover">#3A5F54</Color>
+    <Color x:Key="C.AccentSoft">#3A5F54</Color>
+    <Color x:Key="C.AccentText">#7FB09D</Color>
+    <Color x:Key="C.Member">#8EC07C</Color>
+    <Color x:Key="C.Conflict">#6D9BB5</Color>
+    <Color x:Key="C.Danger">#E67E80</Color>
+    <Color x:Key="C.Hover">#26282D</Color>
+    <Color x:Key="C.Selected">#3A5F54</Color>
+    <Color x:Key="C.Navy">#ECE0C8</Color>
+    <Color x:Key="C.CheckMark">#D5E6DF</Color>
+
+    <SolidColorBrush x:Key="B.Window" Color="{StaticResource C.Window}" />
+    <SolidColorBrush x:Key="B.Scrim" Color="{StaticResource C.Scrim}" />
+    <SolidColorBrush x:Key="B.Panel" Color="{StaticResource C.Panel}" />
+    <SolidColorBrush x:Key="B.Card" Color="{StaticResource C.Card}" />
+    <SolidColorBrush x:Key="B.Border" Color="{StaticResource C.Border}" />
+    <SolidColorBrush x:Key="B.BorderSoft" Color="{StaticResource C.BorderSoft}" />
+    <SolidColorBrush x:Key="B.Text" Color="{StaticResource C.Text}" />
+    <SolidColorBrush x:Key="B.TextDim" Color="{StaticResource C.TextDim}" />
+    <SolidColorBrush x:Key="B.Accent" Color="{StaticResource C.Accent}" />
+    <SolidColorBrush x:Key="B.AccentHover" Color="{StaticResource C.AccentHover}" />
+    <SolidColorBrush x:Key="B.AccentSoft" Color="{StaticResource C.AccentSoft}" />
+    <SolidColorBrush x:Key="B.AccentText" Color="{StaticResource C.AccentText}" />
+    <SolidColorBrush x:Key="B.Member" Color="{StaticResource C.Member}" />
+    <SolidColorBrush x:Key="B.Conflict" Color="{StaticResource C.Conflict}" />
+    <SolidColorBrush x:Key="B.Hover" Color="{StaticResource C.Hover}" />
+    <SolidColorBrush x:Key="B.Selected" Color="{StaticResource C.Selected}" />
+    <SolidColorBrush x:Key="B.Danger" Color="{StaticResource C.Danger}" />
+    <SolidColorBrush x:Key="B.Navy" Color="{StaticResource C.Navy}" />
+    <SolidColorBrush x:Key="B.CheckMark" Color="{StaticResource C.CheckMark}" />
+</ResourceDictionary>

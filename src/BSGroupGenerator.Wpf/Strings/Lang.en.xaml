@@ -1,0 +1,315 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- English — keys mirror Lang.zh.xaml one-to-one. -->
+    <sys:String x:Key="L.App_Title" xml:space="preserve">BS Group Generator — BodySlide Group Tool</sys:String>
+
+    <!-- Menu -->
+    <sys:String x:Key="L.Menu_Tools">Tools</sys:String>
+    <sys:String x:Key="L.Menu_Settings">Settings</sys:String>
+    <sys:String x:Key="L.Menu_Diagnostics">Diagnostics…</sys:String>
+    <sys:String x:Key="L.Menu_CleanupStale">Clean stale outfits…</sys:String>
+    <sys:String x:Key="L.Menu_RulePresets">Rule presets…</sys:String>
+    <sys:String x:Key="L.Menu_Theme">Theme</sys:String>
+    <sys:String x:Key="L.Theme_Dark">Dark</sys:String>
+    <sys:String x:Key="L.Theme_Light">Light</sys:String>
+    <sys:String x:Key="L.Menu_Language">Language</sys:String>
+    <sys:String x:Key="L.Menu_CheckUpdate">Check for updates…</sys:String>
+    <sys:String x:Key="L.Menu_Help">User guide…</sys:String>
+    <sys:String x:Key="L.Menu_About">About…</sys:String>
+    <sys:String x:Key="L.Menu_Exit">Exit</sys:String>
+
+    <!-- Main window -->
+    <sys:String x:Key="L.Main_Instance">MO2 instance</sys:String>
+    <sys:String x:Key="L.Main_Profile">Profile</sys:String>
+    <sys:String x:Key="L.Main_BodySlide">BodySlide</sys:String>
+    <sys:String x:Key="L.Main_Output">Output location</sys:String>
+    <sys:String x:Key="L.Main_Refresh">Refresh</sys:String>
+    <sys:String x:Key="L.Main_AddMo2Dir">Add MO2 folder…</sys:String>
+    <sys:String x:Key="L.Main_Detect">Auto-detect</sys:String>
+    <sys:String x:Key="L.Main_Browse">Browse…</sys:String>
+    <sys:String x:Key="L.Main_FilterOutfits">Filter outfits…</sys:String>
+    <sys:String x:Key="L.Main_FilterMods">Filter mods…</sys:String>
+    <sys:String x:Key="L.Main_UnassignedOnly">Unassigned only</sys:String>
+    <sys:String x:Key="L.Main_GroupsHeader">Groups (select a group → tick items on the left → click "Add to group")</sys:String>
+    <sys:String x:Key="L.Main_AddToGroup">Add to group</sys:String>
+    <sys:String x:Key="L.Main_RemoveFromGroup">Remove from group</sys:String>
+    <sys:String x:Key="L.Main_Undo">Undo</sys:String>
+    <sys:String x:Key="L.Main_ImportGroups">Import group file…</sys:String>
+    <sys:String x:Key="L.Main_NewGroup">New group</sys:String>
+    <sys:String x:Key="L.Main_Rename">Rename</sys:String>
+    <sys:String x:Key="L.Main_DeleteGroup">Delete group</sys:String>
+    <sys:String x:Key="L.Main_ViewGroup">View members</sys:String>
+    <sys:String x:Key="L.Main_RuleGrouping">Rule grouping</sys:String>
+    <sys:String x:Key="L.Main_Save">Save group files</sys:String>
+    <sys:String x:Key="L.Main_SaveDirtyTip">You have unsaved group changes</sys:String>
+
+    <!-- Common words / titles / buttons -->
+    <sys:String x:Key="L.Title_Tip">Notice</sys:String>
+    <sys:String x:Key="L.Title_Error">Error</sys:String>
+    <sys:String x:Key="L.Title_Confirm">Confirm</sys:String>
+    <sys:String x:Key="L.Title_CheckUpdate">Check for updates</sys:String>
+    <sys:String x:Key="L.Title_CleanupStale">Clean stale outfits</sys:String>
+    <sys:String x:Key="L.Title_FilenameConflict">Filename conflict</sys:String>
+    <sys:String x:Key="L.Title_NewGroup">New group</sys:String>
+    <sys:String x:Key="L.Title_RenameGroup">Rename group</sys:String>
+    <sys:String x:Key="L.Btn_Ok">OK</sys:String>
+    <sys:String x:Key="L.Btn_Cancel">Cancel</sys:String>
+    <sys:String x:Key="L.Btn_Close">Close</sys:String>
+    <sys:String x:Key="L.Btn_Apply">Apply</sys:String>
+    <sys:String x:Key="L.Btn_CopyAll">Copy all</sys:String>
+    <sys:String x:Key="L.Word_Add">added to</sys:String>
+    <sys:String x:Key="L.Word_Remove">removed from</sys:String>
+    <sys:String x:Key="L.Word_Unknown">Unknown</sys:String>
+    <sys:String x:Key="L.Word_Unlimited">any</sys:String>
+    <sys:String x:Key="L.Word_All">all outfits</sys:String>
+    <sys:String x:Key="L.Word_None">none</sys:String>
+    <sys:String x:Key="L.Word_Manual">manually specified</sys:String>
+    <sys:String x:Key="L.Word_Unselected">(not selected)</sys:String>
+    <sys:String x:Key="L.Word_Unspecified">(unspecified)</sys:String>
+    <sys:String x:Key="L.Word_UnspecifiedGroup" xml:space="preserve">(unspecified group)</sys:String>
+    <sys:String x:Key="L.Word_NoInstance" xml:space="preserve">(no instance)</sys:String>
+    <sys:String x:Key="L.Word_Default" xml:space="preserve">(default)</sys:String>
+
+    <!-- Output location / write target -->
+    <sys:String x:Key="L.Wm_Auto">Auto (recommended)</sys:String>
+    <sys:String x:Key="L.Wm_BsDir">BodySlide app folder</sys:String>
+    <sys:String x:Key="L.Wm_Mo2Mod">MO2-dedicated mod</sys:String>
+    <sys:String x:Key="L.Wm_GameData">Real game Data</sys:String>
+    <sys:String x:Key="L.Wm_Custom">Custom (browse)</sys:String>
+    <sys:String x:Key="L.Target_Mo2Mod" xml:space="preserve">MO2-dedicated mod ({0})</sys:String>
+    <sys:String x:Key="L.Target_CustomDir">Custom folder</sys:String>
+    <sys:String x:Key="L.Vm_OutputNone" xml:space="preserve">Output: —</sys:String>
+    <sys:String x:Key="L.Vm_OutputUndetermined">Output: undetermined (finish scanning first)</sys:String>
+    <sys:String x:Key="L.Vm_OutputIs">Output: {0}</sys:String>
+
+    <!-- Pickers -->
+    <sys:String x:Key="L.Pick_Mo2Dir">Select the MO2 instance folder (containing ModOrganizer.ini) or a portable folder (containing ModOrganizer.exe)</sys:String>
+    <sys:String x:Key="L.Pick_BodySlideDir">Select the BodySlide folder (containing Config.xml)</sys:String>
+    <sys:String x:Key="L.Pick_CustomOutput">Select a custom output folder</sys:String>
+    <sys:String x:Key="L.Pick_ImportGroups">Import BodySlide group file</sys:String>
+    <sys:String x:Key="L.Pick_ImportGroupsFilter">Group files (*.xml)|*.xml|All files (*.*)|*.*</sys:String>
+
+    <!-- Main window status -->
+    <sys:String x:Key="L.Vm_NotScanned">Not scanned yet.</sys:String>
+    <sys:String x:Key="L.Vm_StatusCounts">Mods {0} · Outfits {1} · Assigned {2} · Unassigned {3}</sys:String>
+    <sys:String x:Key="L.Vm_UnsavedSuffix" xml:space="preserve"> (unsaved)</sys:String>
+    <sys:String x:Key="L.Vm_NoGroupSelected">No group selected</sys:String>
+    <sys:String x:Key="L.Vm_GroupInfo">Current group: {0} · members: {1}</sys:String>
+    <sys:String x:Key="L.Info_Line">Game: {0} · Effective project path: {1} ({2})</sys:String>
+    <sys:String x:Key="L.Info_Unresolved">Effective project path: could not be resolved (see log)</sys:String>
+    <sys:String x:Key="L.Kind_Custom">Custom ProjectPath</sys:String>
+    <sys:String x:Key="L.Kind_AppDir">BodySlide app folder</sys:String>
+    <sys:String x:Key="L.Kind_GameDataCalienteTools">Virtual Data\CalienteTools\BodySlide (MO2 hub)</sys:String>
+    <sys:String x:Key="L.Kind_GameDataTools">Virtual Data\Tools\BodySlide</sys:String>
+    <sys:String x:Key="L.Kind_Fallback">Fallback (no candidate exists)</sys:String>
+
+    <!-- Scan progress overlay -->
+    <sys:String x:Key="L.Scan_Detecting">Detecting the BodySlide folder…</sys:String>
+    <sys:String x:Key="L.Scan_Preparing">Scanning outfits…</sys:String>
+    <sys:String x:Key="L.Scan_Enum">Scanning mod folders ({0}/{1})…</sys:String>
+    <sys:String x:Key="L.Scan_Parse">Parsing outfits ({0}/{1})…</sys:String>
+    <sys:String x:Key="L.Scan_Files">{0} slider set files found</sys:String>
+    <sys:String x:Key="L.Scan_Render">Building the interface…</sys:String>
+
+    <!-- Log -->
+    <sys:String x:Key="L.Log_InstancesFound">Found {0} MO2 instance(s).</sys:String>
+    <sys:String x:Key="L.Log_Instance">Instance {0}: {1}</sys:String>
+    <sys:String x:Key="L.Log_ProfileMods">Profile "{0}": {1} enabled mod(s).</sys:String>
+    <sys:String x:Key="L.Log_ModlistFail">Failed to read modlist: {0}</sys:String>
+    <sys:String x:Key="L.Log_ScanFail">Scan failed: {0}</sys:String>
+    <sys:String x:Key="L.Log_ConfigMissing">Cannot find {0}</sys:String>
+    <sys:String x:Key="L.Log_ExistingLoadFail">Failed to read existing group file {0}: {1}</sys:String>
+    <sys:String x:Key="L.Log_Error">Error: {0}</sys:String>
+    <sys:String x:Key="L.Log_EffectivePath">BodySlide effective project path: {0} ({1})</sys:String>
+    <sys:String x:Key="L.Log_ScanDone">Scan finished: {0} valid SliderSet file(s), {1} outfit(s), {2} warning(s).</sys:String>
+    <sys:String x:Key="L.Log_Warning" xml:space="preserve">  Warning: {0}</sys:String>
+    <sys:String x:Key="L.Log_LoadedGroups">Loaded {1} group(s) generated earlier from {0}.</sys:String>
+    <sys:String x:Key="L.Log_Applied">{0} outfit(s) {1} group "{2}" (now {3} member(s)).</sys:String>
+    <sys:String x:Key="L.Log_Undone">Undid the last grouping change.</sys:String>
+    <sys:String x:Key="L.Log_NewGroup">New group: {0}</sys:String>
+    <sys:String x:Key="L.Log_Renamed">Group "{0}" renamed to "{1}".</sys:String>
+    <sys:String x:Key="L.Log_DeletedGroup">Deleted group: {0}</sys:String>
+    <sys:String x:Key="L.Log_Imported">Imported from {0}: {1} new group(s), {2} member(s).</sys:String>
+    <sys:String x:Key="L.Log_PresetsUpdated">Rule presets updated; {0} preset(s) now.</sys:String>
+    <sys:String x:Key="L.Log_OutputDir">Output folder: {0} ({1})</sys:String>
+    <sys:String x:Key="L.Log_LegacyRemoved">Removed legacy single file: {0}</sys:String>
+    <sys:String x:Key="L.Log_OldRemoved">Removed stale group file: {0}</sys:String>
+    <sys:String x:Key="L.Log_WriteFail">Write failed: {0}</sys:String>
+    <sys:String x:Key="L.Log_Saved">Saved {1} group file(s) under {0} ({2} member(s), {3}).</sys:String>
+    <sys:String x:Key="L.Log_NewModsFound">Found {0} new outfit mod(s): {1}{2}</sys:String>
+    <sys:String x:Key="L.Log_NoGroupsForNew">No groups yet: create one first; these outfits can also be found later via "Unassigned only".</sys:String>
+    <sys:String x:Key="L.Log_NewModsApplied">New-mod grouping: {0} outfit(s) added to group "{1}"; remember to save the group files.</sys:String>
+    <sys:String x:Key="L.Log_RuleApplied">Rule grouping: {0} outfit(s) {1} group "{2}" (now {3} member(s)).</sys:String>
+    <sys:String x:Key="L.Log_PresetSaved">Saved rule preset "{0}" (target group: {1}; {2} preset(s) total).</sys:String>
+    <sys:String x:Key="L.Log_PresetsSkipped">Preset grouping: {0} outfit(s) total; skipped missing groups: {1}</sys:String>
+    <sys:String x:Key="L.Log_PresetsDone">Preset grouping: {0} outfit(s) added to target groups; remember to save the group files.</sys:String>
+    <sys:String x:Key="L.Log_Cleaned">Cleaned {0} stale outfit(s) across {1} group(s).</sys:String>
+
+    <!-- Message boxes -->
+    <sys:String x:Key="L.Msg_SelectGroupFirstSide">Create or select a group on the right first.</sys:String>
+    <sys:String x:Key="L.Msg_NothingChecked">Tick outfits, mods or a separator on the left first.</sys:String>
+    <sys:String x:Key="L.Msg_NothingToUndo">Nothing to undo.</sys:String>
+    <sys:String x:Key="L.Msg_CreateFailed">Creation failed.</sys:String>
+    <sys:String x:Key="L.Msg_DuplicateGroup">A group with the same name already exists (case-insensitive).</sys:String>
+    <sys:String x:Key="L.Msg_RenameFailed">Rename failed.</sys:String>
+    <sys:String x:Key="L.Msg_ImportFailed" xml:space="preserve">Import failed:
+</sys:String>
+    <sys:String x:Key="L.Msg_ConfirmDeleteGroup">Delete group "{0}"? ({1} member(s))</sys:String>
+    <sys:String x:Key="L.Msg_SelectGroupFirst">Select a group first.</sys:String>
+    <sys:String x:Key="L.Msg_SelectOutfitsFirst">Tick the outfits to remove first (tick a mod or a separator to select them in bulk).</sys:String>
+    <sys:String x:Key="L.Msg_ConfirmRemove">Remove {0} outfit(s) from group "{1}"?</sys:String>
+    <sys:String x:Key="L.Msg_NeedGroupFirst">No groups yet: create one first, then use rule grouping.</sys:String>
+    <sys:String x:Key="L.Msg_NoOutfits">No outfits have been scanned yet.</sys:String>
+    <sys:String x:Key="L.Msg_ScanIncomplete">Scanning is not finished or the write location is unknown.</sys:String>
+    <sys:String x:Key="L.Msg_NoGroupsYet">There are no groups yet. Create a group and tick outfits first.</sys:String>
+    <sys:String x:Key="L.Msg_EmptyGroupName">A group has an empty name; rename it first.</sys:String>
+    <sys:String x:Key="L.Msg_FilenameConflict">Groups "{0}" and "{1}" produce the same filename ({2}); rename one of them.</sys:String>
+    <sys:String x:Key="L.Msg_WriteFail">Write failed: {0}</sys:String>
+    <sys:String x:Key="L.Msg_ScanIncompleteStale">Scanning is not finished; cannot tell which outfits are stale.</sys:String>
+    <sys:String x:Key="L.Msg_NoStale">No stale outfits: every group member is present in the current scan.</sys:String>
+    <sys:String x:Key="L.Msg_CleanupConfirm" xml:space="preserve">{0} outfit(s) no longer appear in the current scan (their mods may have been uninstalled or renamed), e.g.: {1}…
+
+Remove them from all groups? (Ctrl+Z to undo)</sys:String>
+    <sys:String x:Key="L.Msg_NotMo2Dir">No ModOrganizer.ini in that folder, and it does not look like a portable install (missing ModOrganizer.exe).</sys:String>
+    <sys:String x:Key="L.Msg_NotBodySlideDir">No Config.xml in that folder; it is not a BodySlide folder.</sys:String>
+    <sys:String x:Key="L.Msg_UpToDate">You are up to date (v{0}).</sys:String>
+    <sys:String x:Key="L.Msg_UpdateAvailable" xml:space="preserve">New version {0} found (current v{1}).
+
+Open the release page to download?</sys:String>
+    <sys:String x:Key="L.Msg_UpdateFailed">Update check failed: {0}</sys:String>
+
+    <!-- View members -->
+    <sys:String x:Key="L.Members_Title">Members of group "{0}"</sys:String>
+    <sys:String x:Key="L.Members_FilterMembers">Filter members…</sys:String>
+    <sys:String x:Key="L.Members_FilterMods">Filter mods / separators…</sys:String>
+    <sys:String x:Key="L.Members_Count">{0} outfit(s) in the group, showing {1}</sys:String>
+    <sys:String x:Key="L.Members_RemoveSelected">Remove selected</sys:String>
+
+    <!-- New mods popup -->
+    <sys:String x:Key="L.NewMods_Title">New outfit mods found</sys:String>
+    <sys:String x:Key="L.NewMods_Target">Target group</sys:String>
+    <sys:String x:Key="L.NewMods_PresetsBtn">Apply presets ({0})</sys:String>
+    <sys:String x:Key="L.NewMods_PresetsTip">Run all saved rule presets (over all outfits); processed items are removed from the list. Manage presets in Settings → Rule presets.</sys:String>
+    <sys:String x:Key="L.NewMods_TopRemaining">{0} outfit(s) still ungrouped ({1} new mod(s), {2} outfit(s) in this scan).</sys:String>
+    <sys:String x:Key="L.NewMods_TopRemainingHint">Keep ticking → pick a target group → "Add selected". You can repeat with different target groups; "Close" stops anytime.</sys:String>
+    <sys:String x:Key="L.NewMods_TopFirst">This scan found {0} new outfit mod(s) ({1} outfit(s) in total).</sys:String>
+    <sys:String x:Key="L.NewMods_TopFirstHint">Tick the mods to group (click + to expand outfits), pick a target group, then click "Add selected". Repeat with different groups; the window closes itself when everything is processed. "Close" stops anytime.</sys:String>
+    <sys:String x:Key="L.NewMods_NoneSelected">No outfits selected</sys:String>
+    <sys:String x:Key="L.NewMods_Summary">Will add {0} outfit(s) from {1} mod(s)</sys:String>
+    <sys:String x:Key="L.NewMods_SelectFirst">Tick what to group first (tick a mod or a separator to select in bulk).</sys:String>
+    <sys:String x:Key="L.NewMods_SelectTarget">Pick a target group first.</sys:String>
+    <sys:String x:Key="L.NewMods_AddSelected">Add selected</sys:String>
+
+    <!-- Rule grouping -->
+    <sys:String x:Key="L.RuleGroup_Title">Rule grouping</sys:String>
+    <sys:String x:Key="L.RuleGroup_Explainer">Batch-add/remove scanned outfits to/from the group selected above by keywords: any keyword hit counts (separate with ;), and the preview below refreshes live. Click "Apply" to execute. Save frequently used conditions as a preset — they run automatically when newly installed mods are found.</sys:String>
+    <sys:String x:Key="L.RuleGroup_Target">Target group</sys:String>
+    <sys:String x:Key="L.RuleGroup_Direction">Direction</sys:String>
+    <sys:String x:Key="L.RuleGroup_ModKeywords">Mod keywords</sys:String>
+    <sys:String x:Key="L.RuleGroup_OutfitKeywords">Outfit keywords</sys:String>
+    <sys:String x:Key="L.RuleGroup_ExcludeKeywords">Excluded keywords</sys:String>
+    <sys:String x:Key="L.RuleGroup_Scope">Scope</sys:String>
+    <sys:String x:Key="L.RuleGroup_UnassignedOnly">Unassigned outfits only</sys:String>
+    <sys:String x:Key="L.RuleGroup_WmMod">Filter by mod name; separate with ; empty = any</sys:String>
+    <sys:String x:Key="L.RuleGroup_WmOutfit">Separate with ; empty = all outfits</sys:String>
+    <sys:String x:Key="L.RuleGroup_WmExclude">Matching outfits will be excluded</sys:String>
+    <sys:String x:Key="L.RuleGroup_SavePresetBtn">Save as preset</sys:String>
+    <sys:String x:Key="L.RuleGroup_Preview">Will match {0} outfit(s):</sys:String>
+    <sys:String x:Key="L.RuleGroup_NotInTree" xml:space="preserve">(hits not shown in the main tree ({0}))</sys:String>
+    <sys:String x:Key="L.RuleGroup_SavePresetTitle">Save as rule preset</sys:String>
+    <sys:String x:Key="L.RuleGroup_SavePresetPrompt">Preset name (target group: {0})</sys:String>
+
+    <!-- Rule presets -->
+    <sys:String x:Key="L.RulePresets_Title">Rule presets</sys:String>
+    <sys:String x:Key="L.RulePresets_Head">A preset = one reusable auto-grouping rule.</sys:String>
+    <sys:String x:Key="L.RulePresets_Steps" xml:space="preserve">① Click "New preset…": choose the target group, fill in keywords, confirm the preview, then "Save as preset".&#x0a;② When newly installed mods are found, click "Apply presets" in the popup to run all presets automatically.&#x0a;③ View and delete them here; saving a preset with the same name overwrites it.</sys:String>
+    <sys:String x:Key="L.RulePresets_New">New preset…</sys:String>
+    <sys:String x:Key="L.RulePresets_Delete">Delete selected</sys:String>
+    <sys:String x:Key="L.RulePresets_Empty">No presets yet. Click "New preset…" below to create your first auto-grouping rule.</sys:String>
+    <sys:String x:Key="L.RulePresets_RowTitle">{0} → {1} group "{2}"</sys:String>
+    <sys:String x:Key="L.RulePresets_RowDetail">Mod keywords: {0} · Outfit keywords: {1} · Excluded: {2}</sys:String>
+    <sys:String x:Key="L.RulePresets_UnassignedSuffix" xml:space="preserve"> · unassigned only</sys:String>
+    <sys:String x:Key="L.RulePresets_SelectToDelete">Select a preset to delete first.</sys:String>
+
+    <!-- Save success -->
+    <sys:String x:Key="L.SaveOk_Title">Done</sys:String>
+    <sys:String x:Key="L.SaveOk_Heading">Group files saved</sys:String>
+    <sys:String x:Key="L.SaveOk_OpenOut">Open output folder</sys:String>
+    <sys:String x:Key="L.SaveOk_OpenBs">Open BodySlide folder</sys:String>
+    <sys:String x:Key="L.SaveOk_Msg" xml:space="preserve">Folder: {0}
+One file per group, named after the group: {1}{2} ({3}).
+{4} member(s) in total.</sys:String>
+    <sys:String x:Key="L.SaveOk_CustomNote">Note: a custom folder is not necessarily readable by BodySlide (the SliderGroups of the effective project path, or of a mod). If BodySlide does not show the new groups, move the files to those locations.</sys:String>
+    <sys:String x:Key="L.SaveOk_Restart">Restart BodySlide for the changes to take effect; if you launch through MO2, restart MO2 as well to refresh its virtual file system.</sys:String>
+
+    <!-- Diagnostics -->
+    <sys:String x:Key="L.Diag_Title">Diagnostics</sys:String>
+
+    <!-- About -->
+    <sys:String x:Key="L.About_Title">About BS Group Generator</sys:String>
+    <sys:String x:Key="L.About_Desc">Reads the mods installed via Mod Organizer 2, lets you batch-assign BodySlide slider sets into groups, and generates group files in BodySlide's native format. Works with any BodySlide-supported game such as Skyrim SE/AE and Fallout 4.</sys:String>
+    <sys:String x:Key="L.About_Author">Author: lin-414</sys:String>
+    <sys:String x:Key="L.About_Compat">The group files are fully compatible with BodySlide; each group becomes its own file named after the group, stored in BodySlide's SliderGroups folder.</sys:String>
+
+    <!-- Help -->
+    <sys:String x:Key="L.Help_H1">1. Quick start (4 steps)</sys:String>
+    <sys:String x:Key="L.Help_01">This tool reads the mods installed via Mod Organizer 2 (MO2), lets you batch-assign outfits (BodySlide slider sets) into groups, and generates group files in BodySlide's native format, one file per group.</sys:String>
+    <sys:String x:Key="L.Help_02">1. Pick the MO2 instance and Profile — global instances and portable installs are discovered automatically; the Profile defaults to the last one used.</sys:String>
+    <sys:String x:Key="L.Help_03">2. Confirm the BodySlide folder — auto-detection usually succeeds. The grey "effective project path" line below the cards is where BodySlide actually reads outfits and groups; keep an eye on it.</sys:String>
+    <sys:String x:Key="L.Help_04">3. Create groups and tick — use "New group" on the right to create and select a group; tick a separator in the left tree (= all its mods) or expand and tick individual outfits; clicking "Add to group" is what actually writes. A green ✔ means the outfit is already in that group; "Remove from group" undoes ticked content.</sys:String>
+    <sys:String x:Key="L.Help_05">4. Save — click "Save group files" (Ctrl+S). Each group produces one file named after it (e.g. UBE.xml). Restart BodySlide afterwards (if you launch through MO2, restart MO2 too).</sys:String>
+    <sys:String x:Key="L.Help_H2">2. Interface areas</sys:String>
+    <sys:String x:Key="L.Help_S2_Top">[Top settings area]</sys:String>
+    <sys:String x:Key="L.Help_06">MO2 instance: global instances and portable installs under %LOCALAPPDATA%\ModOrganizer are found automatically; "Add MO2 folder…" points to an instance folder manually; "Refresh" rescans instances.</sys:String>
+    <sys:String x:Key="L.Help_07">Profile: lists every Profile available to that instance. The enabled-mod list comes from that Profile's modlist.txt, in the same order as MO2's left pane.</sys:String>
+    <sys:String x:Key="L.Help_08">BodySlide: searches enabled mods for folders containing BodySlide*.exe and Config.xml; if none is found, use "Browse…" to point at one.</sys:String>
+    <sys:String x:Key="L.Help_09">Output location: decides where group files are written (see chapter 5). The status bar shows the current output folder on the right; hover for the full path.</sys:String>
+    <sys:String x:Key="L.Help_S2_Tree">[Left mod tree]</sys:String>
+    <sys:String x:Key="L.Help_10">Hierarchy: separator (grey) → mod (bold, collapsible) → outfits; same order as MO2's left pane, showing only enabled mods that contain BodySlide outfits.</sys:String>
+    <sys:String x:Key="L.Help_11">Filter boxes at the top match outfit and mod names (substring, case-insensitive); a mod-name hit shows that mod's whole outfit list; "Unassigned only" shows outfits not yet in any group.</sys:String>
+    <sys:String x:Key="L.Help_12">Checkboxes only "select" content — "Add to group" / "Remove from group" does the writing. Ticking a mod or separator ticks all outfits beneath it.</sys:String>
+    <sys:String x:Key="L.Help_13">A green ✔ prefix means the outfit is already in the selected group; the [in group x/total] badge after a mod title shows how many of its outfits are in the group.</sys:String>
+    <sys:String x:Key="L.Help_S2_Groups">[Right group panel]</sys:String>
+    <sys:String x:Key="L.Help_14">Group list: click to select (left-tree ticks and badges switch along without losing your place); double-click or "View members" opens the member preview (filterable, tick to batch-remove).</sys:String>
+    <sys:String x:Key="L.Help_15">"Rule grouping": batch operations by keyword — see chapter 4.</sys:String>
+    <sys:String x:Key="L.Help_16">"Undo" (Ctrl+Z): steps back through the last 30 grouping changes — see chapter 5.</sys:String>
+    <sys:String x:Key="L.Help_17">"Import group file…": merges other group XML files into the current list for editing.</sys:String>
+    <sys:String x:Key="L.Help_18">New-mod reminder: when a scan finds newly installed outfit mods a popup lists them by separator → mod → outfit (same as the main tree, expandable) — tick, pick a target group, click "Add selected" (undoable), and you can repeat with different target groups. Closing defers it; you can still find those outfits later via "Unassigned only".</sys:String>
+    <sys:String x:Key="L.Help_S2_Status">[Status bar]</sys:String>
+    <sys:String x:Key="L.Help_19">Left: counters (mods/outfits/assigned/unassigned), "Diagnostics" (instance discovery and path resolution details), "Log" (expand the run log).</sys:String>
+    <sys:String x:Key="L.Help_20">Right: the current output folder; hover for the full path.</sys:String>
+    <sys:String x:Key="L.Help_H3">3. Saving and file layout</sys:String>
+    <sys:String x:Key="L.Help_21">On save, each group becomes its own file named after the group (e.g. UBE.xml), containing BodySlide's native &lt;SliderGroups&gt; format (UTF-8 with BOM), fully compatible with BodySlide.</sys:String>
+    <sys:String x:Key="L.Help_22">Saving again overwrites same-named group files and automatically cleans up leftovers from renamed/deleted groups via the internal manifest. Closing the app with unsaved changes shows a warning.</sys:String>
+    <sys:String x:Key="L.Help_23">Note: if a custom output folder is not somewhere BodySlide reads (the SliderGroups of the effective project path, or of a mod), BodySlide will not load those groups.</sys:String>
+    <sys:String x:Key="L.Help_H4">4. Rule grouping (batch)</sys:String>
+    <sys:String x:Key="L.Help_24">With large outfit counts, use keywords to round up a whole batch at once:</sys:String>
+    <sys:String x:Key="L.Help_25">1. Select the target group on the right; "Rule grouping" opens its own window (the main window stays usable).</sys:String>
+    <sys:String x:Key="L.Help_26">2. Three kinds of keywords (separate several with ;, any hit counts; case-insensitive substring match):</sys:String>
+    <sys:String x:Key="L.Help_27">Mod keywords: filter candidate mods by mod name first, then search outfits within them — same-named outfits in other mods are not pulled in; empty = any mod.</sys:String>
+    <sys:String x:Key="L.Help_28">Outfit keywords: match by outfit name; empty = all outfits.</sys:String>
+    <sys:String x:Key="L.Help_29">Excluded keywords: outfits whose name matches are dropped.</sys:String>
+    <sys:String x:Key="L.Help_30">3. "Unassigned outfits only" leaves already-grouped ones alone; the direction is "add to" or "remove from" the group.</sys:String>
+    <sys:String x:Key="L.Help_31">4. The preview shows separator → mod → matched outfits (same hierarchy as the main tree) with a live "will match N outfits" count; click "Apply" to execute — Ctrl+Z undoes it. Example: mod keyword ube, exclude localisation, unassigned only → pulls all ungrouped UBE outfits into the target group in one go (outfit names need not contain ube).</sys:String>
+    <sys:String x:Key="L.Help_H5">5. Undo and output location</sys:String>
+    <sys:String x:Key="L.Help_32">"Undo" (Ctrl+Z or the button) steps back through the last 30 grouping changes: add/remove, rule grouping, new/rename/delete group, import, and removals from the member viewer all undo. Saving does not clear undo history; restarting the app does.</sys:String>
+    <sys:String x:Key="L.Help_33">Five output modes:</sys:String>
+    <sys:String x:Key="L.Help_34">Auto (recommended): writes to the effective project path's SliderGroups when it is a real folder; when it is CalienteTools\BodySlide under MO2's virtual Data (the most common case), writes to the MO2-dedicated mod "BS Group Generator".</sys:String>
+    <sys:String x:Key="L.Help_35">MO2-dedicated mod: mods\BS Group Generator\CalienteTools\BodySlide\SliderGroups\ — visible in MO2, toggleable per Profile, survives BodySlide reinstalls.</sys:String>
+    <sys:String x:Key="L.Help_36">BodySlide app folder / real game Data / custom: writes to the SliderGroups of the respective location.</sys:String>
+    <sys:String x:Key="L.Help_H6">6. FAQ</sys:String>
+    <sys:String x:Key="L.Help_37">· Ticked but not in the group? Ticking only selects — click "Add to group".</sys:String>
+    <sys:String x:Key="L.Help_38">· New groups not showing in BodySlide? 1) Restart BodySlide (with MO2, restart MO2 too); 2) open Settings → Diagnostics and compare the "effective project path" with your "output folder" — BodySlide only reads groups from the effective project path's SliderGroups.</sys:String>
+    <sys:String x:Key="L.Help_39">· Why are some mods missing? The tree only shows enabled mods containing BodySlide outfits; disabled mods or mods without outfits do not appear.</sys:String>
+    <sys:String x:Key="L.Help_40">· (name conflict) after an outfit name? That outfit name appears in several mods; ownership is displayed for the highest-priority mod, but grouping matches by name and is unaffected.</sys:String>
+    <sys:String x:Key="L.Help_41">· What is BSGroupGenerator.files.txt in the output folder? The tool's manifest, used to clean up old files automatically; BodySlide ignores it.</sys:String>
+    <sys:String x:Key="L.Help_42">· Something crashed? Exceptions are written to %APPDATA%\BSGroupGenerator\crash.log — feel free to send that file to the developer.</sys:String>
+    <sys:String x:Key="L.Prompt_GroupName">Group name:</sys:String>
+    <sys:String x:Key="L.Prompt_NewGroupName">New group name:</sys:String>
+    <sys:String x:Key="L.Tree_ConflictSuffix"> (name conflict)</sys:String>
+    <sys:String x:Key="L.Tree_InGroupBadge">{0} [in group {1}/{2}]</sys:String>
+    <sys:String x:Key="L.Tree_InGroupPrefix" xml:space="preserve"> [in group </sys:String>
+    <sys:String x:Key="L.Tree_MatchHeader">{0} (matched {1}/{2})</sys:String>
+    <sys:String x:Key="L.Tree_NoMatchingMods">(no mods match the filters)</sys:String>
+</ResourceDictionary>

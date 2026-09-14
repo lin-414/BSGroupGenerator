@@ -1,0 +1,315 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- 中文（简体）——默认语言。键与英文版 Lang.en.xaml 一一对应。 -->
+    <sys:String x:Key="L.App_Title" xml:space="preserve">BS Group Generator — BodySlide 分组生成工具</sys:String>
+
+    <!-- 菜单 -->
+    <sys:String x:Key="L.Menu_Tools">工具(_T)</sys:String>
+    <sys:String x:Key="L.Menu_Settings">设置(_S)</sys:String>
+    <sys:String x:Key="L.Menu_Diagnostics">诊断信息(_D)</sys:String>
+    <sys:String x:Key="L.Menu_CleanupStale">清理失效服装(_C)…</sys:String>
+    <sys:String x:Key="L.Menu_RulePresets">规则预设(_P)…</sys:String>
+    <sys:String x:Key="L.Menu_Theme">界面主题(_M)</sys:String>
+    <sys:String x:Key="L.Theme_Dark">暗色</sys:String>
+    <sys:String x:Key="L.Theme_Light">亮色</sys:String>
+    <sys:String x:Key="L.Menu_Language">语言(_L)</sys:String>
+    <sys:String x:Key="L.Menu_CheckUpdate">检查更新(_U)</sys:String>
+    <sys:String x:Key="L.Menu_Help">使用说明(_H)</sys:String>
+    <sys:String x:Key="L.Menu_About">关于(_A)</sys:String>
+    <sys:String x:Key="L.Menu_Exit">退出(_X)</sys:String>
+
+    <!-- 主窗口 -->
+    <sys:String x:Key="L.Main_Instance">MO2 实例</sys:String>
+    <sys:String x:Key="L.Main_Profile">配置 Profile</sys:String>
+    <sys:String x:Key="L.Main_BodySlide">BodySlide</sys:String>
+    <sys:String x:Key="L.Main_Output">输出位置</sys:String>
+    <sys:String x:Key="L.Main_Refresh">刷新</sys:String>
+    <sys:String x:Key="L.Main_AddMo2Dir">添加 MO2 目录…</sys:String>
+    <sys:String x:Key="L.Main_Detect">自动检测</sys:String>
+    <sys:String x:Key="L.Main_Browse">浏览…</sys:String>
+    <sys:String x:Key="L.Main_FilterOutfits">过滤服装名…</sys:String>
+    <sys:String x:Key="L.Main_FilterMods">过滤模组名…</sys:String>
+    <sys:String x:Key="L.Main_UnassignedOnly">仅看未分配</sys:String>
+    <sys:String x:Key="L.Main_GroupsHeader">分组（选中组 → 左侧勾选 → 点「加入当前组」）</sys:String>
+    <sys:String x:Key="L.Main_AddToGroup">加入当前组</sys:String>
+    <sys:String x:Key="L.Main_RemoveFromGroup">移出当前组</sys:String>
+    <sys:String x:Key="L.Main_Undo">撤销</sys:String>
+    <sys:String x:Key="L.Main_ImportGroups">导入组文件…</sys:String>
+    <sys:String x:Key="L.Main_NewGroup">新建组</sys:String>
+    <sys:String x:Key="L.Main_Rename">重命名</sys:String>
+    <sys:String x:Key="L.Main_DeleteGroup">删除组</sys:String>
+    <sys:String x:Key="L.Main_ViewGroup">查看组</sys:String>
+    <sys:String x:Key="L.Main_RuleGrouping">规则归组</sys:String>
+    <sys:String x:Key="L.Main_Save">保存分组文件</sys:String>
+    <sys:String x:Key="L.Main_SaveDirtyTip">有未保存的分组修改</sys:String>
+
+    <!-- 通用词/标题/按钮 -->
+    <sys:String x:Key="L.Title_Tip">提示</sys:String>
+    <sys:String x:Key="L.Title_Error">错误</sys:String>
+    <sys:String x:Key="L.Title_Confirm">确认</sys:String>
+    <sys:String x:Key="L.Title_CheckUpdate">检查更新</sys:String>
+    <sys:String x:Key="L.Title_CleanupStale">清理失效服装</sys:String>
+    <sys:String x:Key="L.Title_FilenameConflict">文件名冲突</sys:String>
+    <sys:String x:Key="L.Title_NewGroup">新建组</sys:String>
+    <sys:String x:Key="L.Title_RenameGroup">重命名组</sys:String>
+    <sys:String x:Key="L.Btn_Ok">确定</sys:String>
+    <sys:String x:Key="L.Btn_Cancel">取消</sys:String>
+    <sys:String x:Key="L.Btn_Close">关闭</sys:String>
+    <sys:String x:Key="L.Btn_Apply">应用</sys:String>
+    <sys:String x:Key="L.Btn_CopyAll">复制全部</sys:String>
+    <sys:String x:Key="L.Word_Add">加入</sys:String>
+    <sys:String x:Key="L.Word_Remove">移出</sys:String>
+    <sys:String x:Key="L.Word_Unknown">未知</sys:String>
+    <sys:String x:Key="L.Word_Unlimited">不限</sys:String>
+    <sys:String x:Key="L.Word_All">全部</sys:String>
+    <sys:String x:Key="L.Word_None">无</sys:String>
+    <sys:String x:Key="L.Word_Manual">手动指定</sys:String>
+    <sys:String x:Key="L.Word_Unselected">未选</sys:String>
+    <sys:String x:Key="L.Word_Unspecified">未指定</sys:String>
+    <sys:String x:Key="L.Word_UnspecifiedGroup" xml:space="preserve">（未指定组）</sys:String>
+    <sys:String x:Key="L.Word_NoInstance" xml:space="preserve">（无实例）</sys:String>
+    <sys:String x:Key="L.Word_Default" xml:space="preserve">（默认）</sys:String>
+
+    <!-- 输出位置 / 写入目标 -->
+    <sys:String x:Key="L.Wm_Auto">自动（推荐）</sys:String>
+    <sys:String x:Key="L.Wm_BsDir">BodySlide 程序目录</sys:String>
+    <sys:String x:Key="L.Wm_Mo2Mod">MO2 专用模组</sys:String>
+    <sys:String x:Key="L.Wm_GameData">游戏真实 Data</sys:String>
+    <sys:String x:Key="L.Wm_Custom">自定义（浏览选择）</sys:String>
+    <sys:String x:Key="L.Target_Mo2Mod" xml:space="preserve">MO2 专用模组（{0}）</sys:String>
+    <sys:String x:Key="L.Target_CustomDir">自定义目录</sys:String>
+    <sys:String x:Key="L.Vm_OutputNone" xml:space="preserve">输出：—</sys:String>
+    <sys:String x:Key="L.Vm_OutputUndetermined">输出：未确定（先完成扫描）</sys:String>
+    <sys:String x:Key="L.Vm_OutputIs">输出：{0}</sys:String>
+
+    <!-- 选择器 -->
+    <sys:String x:Key="L.Pick_Mo2Dir">选择 MO2 实例目录（含 ModOrganizer.ini）或便携安装目录（含 ModOrganizer.exe）</sys:String>
+    <sys:String x:Key="L.Pick_BodySlideDir">选择 BodySlide 目录（含 Config.xml）</sys:String>
+    <sys:String x:Key="L.Pick_CustomOutput">选择自定义输出目录</sys:String>
+    <sys:String x:Key="L.Pick_ImportGroups">导入 BodySlide 分组文件</sys:String>
+    <sys:String x:Key="L.Pick_ImportGroupsFilter">分组文件 (*.xml)|*.xml|全部文件 (*.*)|*.*</sys:String>
+
+    <!-- 主窗口状态 -->
+    <sys:String x:Key="L.Vm_NotScanned">尚未扫描。</sys:String>
+    <sys:String x:Key="L.Vm_StatusCounts">模组 {0} · 服装 {1} · 已分配 {2} · 未分配 {3}</sys:String>
+    <sys:String x:Key="L.Vm_UnsavedSuffix" xml:space="preserve">（未保存）</sys:String>
+    <sys:String x:Key="L.Vm_NoGroupSelected">当前未选中组</sys:String>
+    <sys:String x:Key="L.Vm_GroupInfo">当前组：{0} · 成员 {1}</sys:String>
+    <sys:String x:Key="L.Info_Line">游戏：{0}　·　有效项目路径：{1}（{2}）</sys:String>
+    <sys:String x:Key="L.Info_Unresolved">有效项目路径：无法解析（见日志）</sys:String>
+    <sys:String x:Key="L.Kind_Custom">自定义 ProjectPath</sys:String>
+    <sys:String x:Key="L.Kind_AppDir">BodySlide 程序目录</sys:String>
+    <sys:String x:Key="L.Kind_GameDataCalienteTools">虚拟 Data\CalienteTools\BodySlide（MO2 汇聚点）</sys:String>
+    <sys:String x:Key="L.Kind_GameDataTools">虚拟 Data\Tools\BodySlide</sys:String>
+    <sys:String x:Key="L.Kind_Fallback">回落（候选均不存在）</sys:String>
+
+    <!-- 扫描进度遮罩 -->
+    <sys:String x:Key="L.Scan_Detecting">正在检测 BodySlide 目录…</sys:String>
+    <sys:String x:Key="L.Scan_Preparing">正在扫描服装…</sys:String>
+    <sys:String x:Key="L.Scan_Enum">正在扫描模组目录（{0}/{1}）…</sys:String>
+    <sys:String x:Key="L.Scan_Parse">正在解析服装（{0}/{1}）…</sys:String>
+    <sys:String x:Key="L.Scan_Files">已发现 {0} 个滑块组文件</sys:String>
+    <sys:String x:Key="L.Scan_Render">正在生成界面…</sys:String>
+
+    <!-- 日志 -->
+    <sys:String x:Key="L.Log_InstancesFound">发现 {0} 个 MO2 实例。</sys:String>
+    <sys:String x:Key="L.Log_Instance">实例 {0}：{1}</sys:String>
+    <sys:String x:Key="L.Log_ProfileMods">Profile "{0}"：启用模组 {1} 个。</sys:String>
+    <sys:String x:Key="L.Log_ModlistFail">读取 modlist 失败：{0}</sys:String>
+    <sys:String x:Key="L.Log_ScanFail">扫描失败：{0}</sys:String>
+    <sys:String x:Key="L.Log_ConfigMissing">找不到 {0}</sys:String>
+    <sys:String x:Key="L.Log_ExistingLoadFail">读取已有分组文件失败：{0}：{1}</sys:String>
+    <sys:String x:Key="L.Log_Error">错误：{0}</sys:String>
+    <sys:String x:Key="L.Log_EffectivePath">BodySlide 有效项目路径：{0}（{1}）</sys:String>
+    <sys:String x:Key="L.Log_ScanDone">扫描完成：{0} 个有效滑块组文件，{1} 个服装，{2} 个警告。</sys:String>
+    <sys:String x:Key="L.Log_Warning" xml:space="preserve">  警告：{0}</sys:String>
+    <sys:String x:Key="L.Log_LoadedGroups">已从 {0} 载入上次生成的 {1} 个组。</sys:String>
+    <sys:String x:Key="L.Log_Applied">已把 {0} 个服装{1}组 "{2}"（现成员 {3} 个）。</sys:String>
+    <sys:String x:Key="L.Log_Undone">已撤销上一步分组操作。</sys:String>
+    <sys:String x:Key="L.Log_NewGroup">新建组：{0}</sys:String>
+    <sys:String x:Key="L.Log_Renamed">组 "{0}" 重命名为 "{1}"。</sys:String>
+    <sys:String x:Key="L.Log_DeletedGroup">删除组：{0}</sys:String>
+    <sys:String x:Key="L.Log_Imported">从 {0} 导入：新增 {1} 个组、{2} 个成员。</sys:String>
+    <sys:String x:Key="L.Log_PresetsUpdated">规则预设已更新，现有 {0} 个预设。</sys:String>
+    <sys:String x:Key="L.Log_OutputDir">输出目录：{0}（{1}）</sys:String>
+    <sys:String x:Key="L.Log_LegacyRemoved">已删除旧版单文件：{0}</sys:String>
+    <sys:String x:Key="L.Log_OldRemoved">已删除旧分组文件：{0}</sys:String>
+    <sys:String x:Key="L.Log_WriteFail">写入失败：{0}</sys:String>
+    <sys:String x:Key="L.Log_Saved">已保存 {0} 下 {1} 个组文件（共 {2} 个成员，{3}）。</sys:String>
+    <sys:String x:Key="L.Log_NewModsFound">发现 {0} 个新服装模组：{1}{2}</sys:String>
+    <sys:String x:Key="L.Log_NoGroupsForNew">还没有分组：先「新建组」，之后也可用「仅看未分配」查看这些服装。</sys:String>
+    <sys:String x:Key="L.Log_NewModsApplied">新模组归组：{0} 个服装已加入组 "{1}"，记得「保存分组文件」。</sys:String>
+    <sys:String x:Key="L.Log_RuleApplied">规则归组：{0} 个服装{1}组 "{2}"（现成员 {3} 个）。</sys:String>
+    <sys:String x:Key="L.Log_PresetSaved">已保存规则预设「{0}」（目标组：{1}，共 {2} 个预设）。</sys:String>
+    <sys:String x:Key="L.Log_PresetsSkipped">按预设归组：共 {0} 个服装；下列组不存在已跳过：{1}</sys:String>
+    <sys:String x:Key="L.Log_PresetsDone">按预设归组：共 {0} 个服装加入目标组，记得「保存分组文件」。</sys:String>
+    <sys:String x:Key="L.Log_Cleaned">已清理 {0} 个失效服装（涉及 {1} 个组）。</sys:String>
+
+    <!-- 消息框 -->
+    <sys:String x:Key="L.Msg_SelectGroupFirstSide">请先在右侧新建或选中一个组。</sys:String>
+    <sys:String x:Key="L.Msg_NothingChecked">请先在左侧勾选要操作的服装、模组或分隔符。</sys:String>
+    <sys:String x:Key="L.Msg_NothingToUndo">没有可撤销的操作。</sys:String>
+    <sys:String x:Key="L.Msg_CreateFailed">创建失败。</sys:String>
+    <sys:String x:Key="L.Msg_DuplicateGroup">已存在同名组（忽略大小写）。</sys:String>
+    <sys:String x:Key="L.Msg_RenameFailed">重命名失败。</sys:String>
+    <sys:String x:Key="L.Msg_ImportFailed" xml:space="preserve">导入失败：
+</sys:String>
+    <sys:String x:Key="L.Msg_ConfirmDeleteGroup">确定删除组 "{0}"？（成员 {1} 个）</sys:String>
+    <sys:String x:Key="L.Msg_SelectGroupFirst">请先选中一个组。</sys:String>
+    <sys:String x:Key="L.Msg_SelectOutfitsFirst">请先勾选要移出的服装（可勾选模组或分隔符批量全选）。</sys:String>
+    <sys:String x:Key="L.Msg_ConfirmRemove">确定把 {0} 个服装移出组「{1}」？</sys:String>
+    <sys:String x:Key="L.Msg_NeedGroupFirst">还没有任何组：请先「新建组」，再使用规则归组。</sys:String>
+    <sys:String x:Key="L.Msg_NoOutfits">尚未扫描到任何服装。</sys:String>
+    <sys:String x:Key="L.Msg_ScanIncomplete">尚未完成扫描或无法确定写入位置。</sys:String>
+    <sys:String x:Key="L.Msg_NoGroupsYet">当前没有任何组。请先新建组并勾选服装。</sys:String>
+    <sys:String x:Key="L.Msg_EmptyGroupName">存在空名称的组，请先重命名。</sys:String>
+    <sys:String x:Key="L.Msg_FilenameConflict">组 "{0}" 和 "{1}" 的文件名相同（都叫 {2}），请重命名其中一个组。</sys:String>
+    <sys:String x:Key="L.Msg_WriteFail">写入失败：{0}</sys:String>
+    <sys:String x:Key="L.Msg_ScanIncompleteStale">尚未完成扫描，无法判断哪些服装已失效。</sys:String>
+    <sys:String x:Key="L.Msg_NoStale">没有失效服装：所有组成员都能在当前扫描结果中找到。</sys:String>
+    <sys:String x:Key="L.Msg_CleanupConfirm" xml:space="preserve">有 {0} 个服装已不在当前扫描结果中（所属模组可能被卸载或改名），例如：{1}…
+
+确定从各组剔除？（可 Ctrl+Z 撤销）</sys:String>
+    <sys:String x:Key="L.Msg_NotMo2Dir">该目录下没有 ModOrganizer.ini，也不像便携安装（缺 ModOrganizer.exe）。</sys:String>
+    <sys:String x:Key="L.Msg_NotBodySlideDir">该目录下没有 Config.xml，不是 BodySlide 目录。</sys:String>
+    <sys:String x:Key="L.Msg_UpToDate">已是最新版本（v{0}）。</sys:String>
+    <sys:String x:Key="L.Msg_UpdateAvailable" xml:space="preserve">发现新版本 {0}（当前 v{1}）。
+
+是否打开发布页下载？</sys:String>
+    <sys:String x:Key="L.Msg_UpdateFailed">检查更新失败：{0}</sys:String>
+
+    <!-- 查看组 -->
+    <sys:String x:Key="L.Members_Title">组「{0}」的成员</sys:String>
+    <sys:String x:Key="L.Members_FilterMembers">过滤成员名…</sys:String>
+    <sys:String x:Key="L.Members_FilterMods">过滤模组 / 分隔符…</sys:String>
+    <sys:String x:Key="L.Members_Count">组内共 {0} 个服装，当前显示 {1} 个</sys:String>
+    <sys:String x:Key="L.Members_RemoveSelected">移出所选</sys:String>
+
+    <!-- 新装模组弹窗 -->
+    <sys:String x:Key="L.NewMods_Title">发现新服装模组</sys:String>
+    <sys:String x:Key="L.NewMods_Target">目标组</sys:String>
+    <sys:String x:Key="L.NewMods_PresetsBtn">按预设分组（{0} 条）</sys:String>
+    <sys:String x:Key="L.NewMods_PresetsTip">依次执行已保存的规则预设（作用于全部服装），已归组的项会从列表移除；预设可在 设置→规则预设 管理</sys:String>
+    <sys:String x:Key="L.NewMods_TopRemaining">还剩 {0} 个服装未归组（本次新模组 {1} 个、共 {2} 个服装）。</sys:String>
+    <sys:String x:Key="L.NewMods_TopRemainingHint">继续勾选 → 选目标组 → 「加入所选组」，可换不同目标组分多批处理；点「关闭」随时结束。</sys:String>
+    <sys:String x:Key="L.NewMods_TopFirst">本次扫描发现 {0} 个新服装模组（共 {1} 个服装）。</sys:String>
+    <sys:String x:Key="L.NewMods_TopFirstHint">勾选要归组的模组（点 + 可展开查看具体服装），选好目标组后点「加入所选组」；可分多次选不同目标组，全部处理完自动关闭，点「关闭」也可随时结束。</sys:String>
+    <sys:String x:Key="L.NewMods_NoneSelected">未勾选任何服装</sys:String>
+    <sys:String x:Key="L.NewMods_Summary">将加入 {0} 个服装 · 来自 {1} 个模组</sys:String>
+    <sys:String x:Key="L.NewMods_SelectFirst">请先勾选要归组的内容（可勾选模组或分隔符批量全选）。</sys:String>
+    <sys:String x:Key="L.NewMods_SelectTarget">请先选择目标组。</sys:String>
+    <sys:String x:Key="L.NewMods_AddSelected">加入所选组</sys:String>
+
+    <!-- 规则归组 -->
+    <sys:String x:Key="L.RuleGroup_Title">规则归组</sys:String>
+    <sys:String x:Key="L.RuleGroup_Explainer">按关键字把扫描到的服装批量加入/移出上方所选的组：任一关键字命中即算（分号分隔多个），条件变化时下方预览实时刷新；确认后点「应用」，常用条件可「存为预设」，扫描发现新装模组时会自动套用。</sys:String>
+    <sys:String x:Key="L.RuleGroup_Target">目标组</sys:String>
+    <sys:String x:Key="L.RuleGroup_Direction">方向</sys:String>
+    <sys:String x:Key="L.RuleGroup_ModKeywords">模组关键字</sys:String>
+    <sys:String x:Key="L.RuleGroup_OutfitKeywords">服装关键字</sys:String>
+    <sys:String x:Key="L.RuleGroup_ExcludeKeywords">排除关键字</sys:String>
+    <sys:String x:Key="L.RuleGroup_Scope">范围</sys:String>
+    <sys:String x:Key="L.RuleGroup_UnassignedOnly">仅未分配服装</sys:String>
+    <sys:String x:Key="L.RuleGroup_WmMod">按模组名筛选；分号分隔多个，留空 = 不限</sys:String>
+    <sys:String x:Key="L.RuleGroup_WmOutfit">分号分隔多个，留空 = 全部服装</sys:String>
+    <sys:String x:Key="L.RuleGroup_WmExclude">命中的服装将被排除</sys:String>
+    <sys:String x:Key="L.RuleGroup_SavePresetBtn">存为预设</sys:String>
+    <sys:String x:Key="L.RuleGroup_Preview">将命中 {0} 个服装：</sys:String>
+    <sys:String x:Key="L.RuleGroup_NotInTree" xml:space="preserve">（不在左侧树中的命中　({0})）</sys:String>
+    <sys:String x:Key="L.RuleGroup_SavePresetTitle">保存为规则预设</sys:String>
+    <sys:String x:Key="L.RuleGroup_SavePresetPrompt">预设名称（目标组：{0}）</sys:String>
+
+    <!-- 规则预设 -->
+    <sys:String x:Key="L.RulePresets_Title">规则预设</sys:String>
+    <sys:String x:Key="L.RulePresets_Head">预设 = 一条可复用的自动归组规则。</sys:String>
+    <sys:String x:Key="L.RulePresets_Steps" xml:space="preserve">① 点「新建预设…」：选目标组、填关键字，预览确认后点「存为预设」。&#x0a;② 再次扫描发现新装模组时，弹窗里点「按预设分组」会依次执行全部预设，自动完成归组。&#x0a;③ 这里用于查看和删除；在规则归组里保存同名预设即可覆盖更新。</sys:String>
+    <sys:String x:Key="L.RulePresets_New">新建预设…</sys:String>
+    <sys:String x:Key="L.RulePresets_Delete">删除所选</sys:String>
+    <sys:String x:Key="L.RulePresets_Empty">还没有预设。点下方「新建预设…」创建第一条自动归组规则。</sys:String>
+    <sys:String x:Key="L.RulePresets_RowTitle">{0}　→ {1}组「{2}」</sys:String>
+    <sys:String x:Key="L.RulePresets_RowDetail">模组关键字：{0}　·　服装关键字：{1}　·　排除：{2}</sys:String>
+    <sys:String x:Key="L.RulePresets_UnassignedSuffix" xml:space="preserve">　·　仅未分配</sys:String>
+    <sys:String x:Key="L.RulePresets_SelectToDelete">请先选中要删除的预设。</sys:String>
+
+    <!-- 保存成功 -->
+    <sys:String x:Key="L.SaveOk_Title">完成</sys:String>
+    <sys:String x:Key="L.SaveOk_Heading">分组文件已保存</sys:String>
+    <sys:String x:Key="L.SaveOk_OpenOut">打开输出目录</sys:String>
+    <sys:String x:Key="L.SaveOk_OpenBs">打开 BodySlide 目录</sys:String>
+    <sys:String x:Key="L.SaveOk_Msg" xml:space="preserve">目录：{0}
+每个组一个文件，文件名即组名：{1}{2}（{3}）。
+共 {4} 个成员。</sys:String>
+    <sys:String x:Key="L.SaveOk_CustomNote">注意：自定义目录不一定是 BodySlide 能读取的地方（有效项目路径的 SliderGroups 或模组的 SliderGroups）。若 BodySlide 里看不到新组，请把文件移动到这些位置。</sys:String>
+    <sys:String x:Key="L.SaveOk_Restart">请重启 BodySlide 使其生效；通过 MO2 启动的建议连 MO2 一起重启以刷新虚拟文件系统。</sys:String>
+
+    <!-- 诊断 -->
+    <sys:String x:Key="L.Diag_Title">诊断信息</sys:String>
+
+    <!-- 关于 -->
+    <sys:String x:Key="L.About_Title">关于 BS Group Generator</sys:String>
+    <sys:String x:Key="L.About_Desc">读取 Mod Organizer 2 安装的模组，把 BodySlide 滑块组批量划进分组，生成原生格式的分组文件。支持天际 SE/AE、辐射 4 等所有 BodySlide 支持的游戏。</sys:String>
+    <sys:String x:Key="L.About_Author">作者：lin-414</sys:String>
+    <sys:String x:Key="L.About_Compat">分组文件与 BodySlide 完全兼容；每个组生成一个以组名命名的独立文件，存放在 BodySlide 的 SliderGroups 目录。</sys:String>
+
+    <!-- 帮助 -->
+    <sys:String x:Key="L.Help_H1">一、快速上手（4 步）</sys:String>
+    <sys:String x:Key="L.Help_01">本工具读取 Mod Organizer 2（MO2）安装的模组，让你把服装（BodySlide 滑块组）批量划进分组，并按组生成 BodySlide 原生格式的分组文件。</sys:String>
+    <sys:String x:Key="L.Help_02">1. 选择 MO2 实例与配置（Profile）——程序自动发现全局实例与便携安装；Profile 会默认带上次使用的。</sys:String>
+    <sys:String x:Key="L.Help_03">2. 确认 BodySlide 目录——通常自动检测成功。卡片下方的灰字"有效项目路径"就是 BodySlide 实际读取服装与分组的位置，请留意它。</sys:String>
+    <sys:String x:Key="L.Help_04">3. 建组与勾选——右侧「新建组」创建并选中一个组；左侧树勾选分隔符（=全选其下模组）或展开后勾选单个服装；点「加入当前组」才真正写入，绿色 ✔ 表示已在该组，「移出当前组」用于撤销勾选内容。</sys:String>
+    <sys:String x:Key="L.Help_05">4. 保存——点「保存分组文件」（Ctrl+S）。每个组生成一个文件，文件名即组名（如 UBE.xml）。完成后重启 BodySlide（通过 MO2 启动的建议连 MO2 一起重启）。</sys:String>
+    <sys:String x:Key="L.Help_H2">二、界面各区域说明</sys:String>
+    <sys:String x:Key="L.Help_S2_Top">【顶部设置区】</sys:String>
+    <sys:String x:Key="L.Help_06">MO2 实例：自动发现 %LOCALAPPDATA%\ModOrganizer 下的全局实例与便携安装；「添加 MO2 目录…」可手动指定实例目录；「刷新」重新扫描实例。</sys:String>
+    <sys:String x:Key="L.Help_07">配置 Profile：列出该实例所有可用的 Profile。启用模组列表读取自该 Profile 的 modlist.txt，顺序与 MO2 左侧栏一致。</sys:String>
+    <sys:String x:Key="L.Help_08">BodySlide：自动在启用模组中查找含 BodySlide*.exe 与 Config.xml 的目录；找不到时用「浏览…」手动指定。</sys:String>
+    <sys:String x:Key="L.Help_09">输出位置：决定分组文件保存到哪里（详见第五章）。状态栏右下角会显示当前输出目录，悬停可看完整路径。</sys:String>
+    <sys:String x:Key="L.Help_S2_Tree">【左侧模组树】</sys:String>
+    <sys:String x:Key="L.Help_10">层级为 分隔符（灰色）→ 模组（加粗，可折叠）→ 服装；顺序与 MO2 左侧栏一致，只显示含 BodySlide 服装的启用模组。</sys:String>
+    <sys:String x:Key="L.Help_11">顶部过滤框：同时匹配服装名与模组名（连续子串、不区分大小写），模组名命中会显示该模组全部服装；「仅看未分配」只显示还没进任何组的服装。</sys:String>
+    <sys:String x:Key="L.Help_12">勾选框只是"选中"待操作的内容——点「加入当前组」/「移出当前组」才写入。勾选模组或分隔符会自动勾选其下所有服装。</sys:String>
+    <sys:String x:Key="L.Help_13">绿色 ✔ 前缀 = 该服装已在当前选中的组里；模组标题后的 [组内 x/总数] 表示组内命中情况。</sys:String>
+    <sys:String x:Key="L.Help_S2_Groups">【右侧组面板】</sys:String>
+    <sys:String x:Key="L.Help_14">组列表：单击选中（左侧勾选状态与标注随之切换且不打断浏览位置），双击或「查看组」打开成员预览（可过滤、可勾选批量移出）。</sys:String>
+    <sys:String x:Key="L.Help_15">「规则归组」：按关键字批量操作，详见第四章。</sys:String>
+    <sys:String x:Key="L.Help_16">「撤销」（Ctrl+Z）：回退最近 30 步分组操作，详见第五章。</sys:String>
+    <sys:String x:Key="L.Help_17">「导入组文件…」：把其他分组 XML 合并进当前列表继续编辑。</sys:String>
+    <sys:String x:Key="L.Help_18">新装模组提醒：扫描发现新装的服装模组时自动弹窗，按 分隔符 → 模组 → 服装 分层列出（与主界面一致，可展开看具体服装）——勾选、选目标组、点「加入所选组」即可归组（可撤销），可分多批换目标组；关闭则暂不处理，之后仍可用「仅看未分配」找到这些服装。</sys:String>
+    <sys:String x:Key="L.Help_S2_Status">【状态栏】</sys:String>
+    <sys:String x:Key="L.Help_19">左侧：统计（模组/服装/已分配/未分配）、「诊断」（查看实例发现与路径解析细节）、「日志」（展开运行日志）。</sys:String>
+    <sys:String x:Key="L.Help_20">右侧：当前输出目录描述，悬停显示完整路径。</sys:String>
+    <sys:String x:Key="L.Help_H3">三、保存与文件布局</sys:String>
+    <sys:String x:Key="L.Help_21">保存时每个组生成一个独立文件，文件名即组名（如 UBE.xml、护甲.xml），内容为 BodySlide 原生 &lt;SliderGroups&gt; 格式（UTF-8 带 BOM），与 BodySlide 完全兼容。</sys:String>
+    <sys:String x:Key="L.Help_22">重复保存会覆盖同名组文件，并按内部清单自动清理改名/删除组后遗留的旧文件。未保存就关闭程序会弹出提示。</sys:String>
+    <sys:String x:Key="L.Help_23">注意：自定义输出目录如果不在 BodySlide 能读取的范围内（有效项目路径的 SliderGroups 或模组的 SliderGroups），BodySlide 不会加载这些组。</sys:String>
+    <sys:String x:Key="L.Help_H4">四、规则归组（批量分组）</sys:String>
+    <sys:String x:Key="L.Help_24">服装数量大时，用关键字一次圈定一批：</sys:String>
+    <sys:String x:Key="L.Help_25">1. 右侧先选中目标组；点「规则归组」会弹出独立窗口（主窗口仍可操作）。</sys:String>
+    <sys:String x:Key="L.Help_26">2. 三类关键字（分号分隔多个，任一命中即命中；不区分大小写，连续子串匹配）：</sys:String>
+    <sys:String x:Key="L.Help_27">模组关键字：先按模组名筛出候选模组，再在这些模组里找服装——不会把其他模组里的同名服装混进来；留空 = 不限模组。</sys:String>
+    <sys:String x:Key="L.Help_28">服装关键字：按服装名匹配；留空 = 全部服装。</sys:String>
+    <sys:String x:Key="L.Help_29">排除关键字：服装名命中的会被剔除。</sys:String>
+    <sys:String x:Key="L.Help_30">3. 勾选"仅未分配服装"则已入组的不动；方向选"加入组"或"移出组"。</sys:String>
+    <sys:String x:Key="L.Help_31">4. 预览按 分隔符 → 模组 → 命中服装 树形展示（与主界面同层级），实时显示"将命中 N 个服装"；确认后点「应用」，结果可用 Ctrl+Z 撤销。例：模组关键字填 ube、排除 汉化、仅未分配 → 一键把 UBE 模组下未分组的服装收入目标组（服装名不必含 ube）。</sys:String>
+    <sys:String x:Key="L.Help_H5">五、撤销与输出位置</sys:String>
+    <sys:String x:Key="L.Help_32">「撤销」（Ctrl+Z 或右侧按钮）可逐步回退最近 30 步分组操作：加入/移出、规则归组、新建/重命名/删除组、导入、查看组中的移出都可撤销。保存到文件不会清空撤销记录，但重启程序会。</sys:String>
+    <sys:String x:Key="L.Help_33">输出位置五种模式：</sys:String>
+    <sys:String x:Key="L.Help_34">自动（推荐）：BodySlide 有效项目路径是真实目录时写它的 SliderGroups；是 MO2 虚拟 Data 下的 CalienteTools\BodySlide（最常见）时，写入 MO2 专用模组"BS Group Generator"。</sys:String>
+    <sys:String x:Key="L.Help_35">MO2 专用模组：mods\BS Group Generator\CalienteTools\BodySlide\SliderGroups\ —— 在 MO2 里可见、可按 Profile 开关、重装 BodySlide 不丢。</sys:String>
+    <sys:String x:Key="L.Help_36">BodySlide 程序目录 / 游戏真实 Data / 自定义：分别写到对应位置的 SliderGroups。</sys:String>
+    <sys:String x:Key="L.Help_H6">六、常见问题</sys:String>
+    <sys:String x:Key="L.Help_37">· 勾选后为什么没进组？勾选只是"选中"，要点「加入当前组」。</sys:String>
+    <sys:String x:Key="L.Help_38">· BodySlide 里看不到新组？1) 重启 BodySlide（经 MO2 启动的连 MO2 重启）；2) 打开「设置→诊断信息」，核对"有效项目路径"与"输出目录"是否一致——BodySlide 只从有效项目路径的 SliderGroups 读取分组。</sys:String>
+    <sys:String x:Key="L.Help_39">· 为什么有些模组不显示？树里只显示含 BodySlide 服装的启用模组；未启用或不含服装的模组不会出现。</sys:String>
+    <sys:String x:Key="L.Help_40">· 服装名后的（同名冲突）？该服装名在多个模组中都出现过，归属显示为优先级最高的模组；分组按名称匹配，不受影响。</sys:String>
+    <sys:String x:Key="L.Help_41">· 输出目录里多了个 BSGroupGenerator.files.txt？那是本工具的清单文件，用于自动清理旧文件，BodySlide 不会读取它。</sys:String>
+    <sys:String x:Key="L.Help_42">· 程序出错了？异常会写入 %APPDATA%\BSGroupGenerator\crash.log，可把该文件发给开发者。</sys:String>
+    <sys:String x:Key="L.Prompt_GroupName">Group name:</sys:String>
+    <sys:String x:Key="L.Prompt_NewGroupName">New group name:</sys:String>
+    <sys:String x:Key="L.Tree_ConflictSuffix"> (name conflict)</sys:String>
+    <sys:String x:Key="L.Tree_InGroupBadge">{0} [in group {1}/{2}]</sys:String>
+    <sys:String x:Key="L.Tree_InGroupPrefix" xml:space="preserve"> [in group </sys:String>
+    <sys:String x:Key="L.Tree_MatchHeader">{0} (matched {1}/{2})</sys:String>
+    <sys:String x:Key="L.Tree_NoMatchingMods">(no mods match the filters)</sys:String>
+</ResourceDictionary>
