@@ -53,6 +53,7 @@
     <sys:String x:Key="L.Title_FilenameConflict">Filename conflict</sys:String>
     <sys:String x:Key="L.Title_NewGroup">New group</sys:String>
     <sys:String x:Key="L.Title_RenameGroup">Rename group</sys:String>
+    <sys:String x:Key="L.Title_UnsavedChanges">Unsaved changes</sys:String>
     <sys:String x:Key="L.Btn_Ok">OK</sys:String>
     <sys:String x:Key="L.Btn_Cancel">Cancel</sys:String>
     <sys:String x:Key="L.Btn_Close">Close</sys:String>
@@ -178,6 +179,14 @@ Remove them from all groups? (Ctrl+Z to undo)</sys:String>
 
 Open the release page to download?</sys:String>
     <sys:String x:Key="L.Msg_UpdateFailed">Update check failed: {0}</sys:String>
+    <sys:String x:Key="L.Msg_AlreadyRunning">BS Group Generator is already running.</sys:String>
+    <sys:String x:Key="L.Msg_OutputDirUndetermined">Scanning has not finished, so the output folder cannot be determined.</sys:String>
+    <sys:String x:Key="L.Msg_CopiedToClipboard">Copied to the clipboard.</sys:String>
+    <sys:String x:Key="L.Msg_UnsavedOnExit" xml:space="preserve">There are unsaved group changes; quitting now will lose them.&#x0a;&#x0a;Yes: save and quit&#x0a;No: quit without saving&#x0a;Cancel: stay in the app</sys:String>
+
+    <!-- Crash log -->
+    <sys:String x:Key="L.Crash_Fatal" xml:space="preserve">An unhandled error occurred; the app will now exit.&#x0a;Details were written to %APPDATA%\BSGroupGenerator\crash.log&#x0a;&#x0a;{0}</sys:String>
+    <sys:String x:Key="L.Crash_NonFatal" xml:space="preserve">An error occurred and was ignored (see %APPDATA%\BSGroupGenerator\crash.log).&#x0a;&#x0a;{0}</sys:String>
 
     <!-- View members -->
     <sys:String x:Key="L.Members_Title">Members of group "{0}"</sys:String>
@@ -206,6 +215,8 @@ Open the release page to download?</sys:String>
     <sys:String x:Key="L.RuleGroup_Explainer">Batch-add/remove scanned outfits to/from the group selected above by keywords: any keyword hit counts (separate with ;), and the preview below refreshes live. Click "Apply" to execute. Save frequently used conditions as a preset — they run automatically when newly installed mods are found.</sys:String>
     <sys:String x:Key="L.RuleGroup_Target">Target group</sys:String>
     <sys:String x:Key="L.RuleGroup_Direction">Direction</sys:String>
+    <sys:String x:Key="L.RuleGroup_Add">Add to group</sys:String>
+    <sys:String x:Key="L.RuleGroup_Remove">Remove from group</sys:String>
     <sys:String x:Key="L.RuleGroup_ModKeywords">Mod keywords</sys:String>
     <sys:String x:Key="L.RuleGroup_OutfitKeywords">Outfit keywords</sys:String>
     <sys:String x:Key="L.RuleGroup_ExcludeKeywords">Excluded keywords</sys:String>
@@ -253,6 +264,7 @@ One file per group, named after the group: {1}{2} ({3}).
     <sys:String x:Key="L.About_Compat">The group files are fully compatible with BodySlide; each group becomes its own file named after the group, stored in BodySlide's SliderGroups folder.</sys:String>
 
     <!-- Help -->
+    <sys:String x:Key="L.Help_Title">Help — BS Group Generator</sys:String>
     <sys:String x:Key="L.Help_H1">1. Quick start (4 steps)</sys:String>
     <sys:String x:Key="L.Help_01">This tool reads the mods installed via Mod Organizer 2 (MO2), lets you batch-assign outfits (BodySlide slider sets) into groups, and generates group files in BodySlide's native format, one file per group.</sys:String>
     <sys:String x:Key="L.Help_02">1. Pick the MO2 instance and Profile — global instances and portable installs are discovered automatically; the Profile defaults to the last one used.</sys:String>
@@ -305,11 +317,14 @@ One file per group, named after the group: {1}{2} ({3}).
     <sys:String x:Key="L.Help_40">· (name conflict) after an outfit name? That outfit name appears in several mods; ownership is displayed for the highest-priority mod, but grouping matches by name and is unaffected.</sys:String>
     <sys:String x:Key="L.Help_41">· What is BSGroupGenerator.files.txt in the output folder? The tool's manifest, used to clean up old files automatically; BodySlide ignores it.</sys:String>
     <sys:String x:Key="L.Help_42">· Something crashed? Exceptions are written to %APPDATA%\BSGroupGenerator\crash.log — feel free to send that file to the developer.</sys:String>
+
+    <!-- Input prompts -->
     <sys:String x:Key="L.Prompt_GroupName">Group name:</sys:String>
     <sys:String x:Key="L.Prompt_NewGroupName">New group name:</sys:String>
-    <sys:String x:Key="L.Tree_ConflictSuffix"> (name conflict)</sys:String>
+
+    <!-- Tree node text (composed in code, not bound in XAML) -->
+    <sys:String x:Key="L.Tree_ConflictSuffix" xml:space="preserve"> (name conflict)</sys:String>
     <sys:String x:Key="L.Tree_InGroupBadge">{0} [in group {1}/{2}]</sys:String>
-    <sys:String x:Key="L.Tree_InGroupPrefix" xml:space="preserve"> [in group </sys:String>
     <sys:String x:Key="L.Tree_MatchHeader">{0} (matched {1}/{2})</sys:String>
     <sys:String x:Key="L.Tree_NoMatchingMods">(no mods match the filters)</sys:String>
 </ResourceDictionary>

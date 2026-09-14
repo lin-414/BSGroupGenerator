@@ -29,7 +29,6 @@ public partial class MainViewModel : ObservableObject
     public List<(ModEntry Entry, string Dir)> Mods { get; private set; } = [];
     public ProjectPathResolution? Resolution { get; private set; }
     public ScanResult? Scan { get; private set; }
-    public HashSet<string>? ConflictNames { get; private set; }
 
     private bool _scanning;
     private bool _localizing;
@@ -123,6 +122,7 @@ public partial class MainViewModel : ObservableObject
         }
         LogWriteTarget();
         OnPropertyChanged(nameof(LogText));
+        UpdateMembershipMarks(); // 树节点文本也是代码拼的（✔ / 同名冲突 / [组内 x/y]），一并换语言
         UpdateCounts();
         UpdateGroupInfo();
         UpdateTitle();
@@ -383,6 +383,8 @@ public partial class MainViewModel : ObservableObject
             }
             else
             {
+                // 还没有清单 = 输出目录可能来自 WinForms 版：尝试读入它写出的单文件分组，
+                // 让老用户已有的组能带进新版继续编辑（保存后该文件会被清理）
                 var legacy = Path.Combine(targetDir, SliderGroupFile.DefaultFileName);
                 if (File.Exists(legacy))
                     filesToLoad.Add(legacy);
@@ -409,9 +411,6 @@ public partial class MainViewModel : ObservableObject
 
         Resolution = outcome.Resolution;
         Scan = outcome.Result;
-        ConflictNames = outcome.Result is null
-            ? null
-            : outcome.Result.Outfits.Where(o => o.HasConflict).Select(o => o.Name).ToHashSet(StringComparer.Ordinal);
 
         if (outcome.Resolution is null)
         {

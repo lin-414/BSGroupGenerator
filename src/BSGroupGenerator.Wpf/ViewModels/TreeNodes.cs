@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using BSGroupGenerator.Core;
+using BSGroupGenerator.Wpf.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -115,7 +116,7 @@ public sealed class OutfitNodeVM : NodeVM
     {
         OutfitName = outfitName;
         HasConflict = hasConflict;
-        Text = (isMember ? "✔ " : "") + (hasConflict ? outfitName + "（同名冲突）" : outfitName);
+        Text = (isMember ? "✔ " : "") + (hasConflict ? outfitName + L10n.Tr("L.Tree_ConflictSuffix") : outfitName);
         IsMember = isMember;
         IsConflict = hasConflict;
         IsChecked = isChecked;
@@ -137,6 +138,7 @@ public sealed class ModNodeVM : NodeVM
         Owner = owner;
         Outfits = visibleOutfits;
         _isMember = isMember;
+        BaseHeader = header;
         Text = header;
         IsMember = allMember && visibleOutfits.Count > 0;
         IsChecked = allMember && visibleOutfits.Count > 0;
@@ -145,12 +147,8 @@ public sealed class ModNodeVM : NodeVM
 
     public string Owner { get; }
     public List<OutfitEntry> Outfits { get; }
-
-    public void Rebadge(string header, bool allMember)
-    {
-        Text = header;
-        IsMember = allMember && Outfits.Count > 0;
-    }
+    /// <summary>不含 [组内 x/y] 徽标的基础头部；由本属性还原，避免依赖当前语言的前缀做字符串剥离。</summary>
+    public string BaseHeader { get; }
 
     /// <summary>子节点是手动构建（而非懒物化）时调用，防止首次展开被清空。</summary>
     public void MarkMaterialized() => _materialized = true;

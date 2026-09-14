@@ -206,14 +206,4 @@ public static class BodySlideLocator
             return null;
         return fullPath[fullBase.Length..].TrimEnd('\\', '/');
     }
-
-    /// <summary>有效项目路径的中文描述。</summary>
-    public static string DescribeKind(ProjectPathKind kind) => kind switch
-    {
-        ProjectPathKind.Custom => "自定义 ProjectPath",
-        ProjectPathKind.AppDir => "BodySlide 程序目录",
-        ProjectPathKind.GameDataCalienteTools => "虚拟 Data\\CalienteTools\\BodySlide（MO2 汇聚点）",
-        ProjectPathKind.GameDataTools => "虚拟 Data\\Tools\\BodySlide",
-        _ => "回落（候选均不存在）",
-    };
 }

@@ -144,7 +144,8 @@ public partial class MainViewModel
         {
             Directory.CreateDirectory(dir);
 
-            // 清理旧版单文件
+            // 清理 WinForms 版遗留的单文件分组（见 SliderGroupFile.DefaultFileName 的说明）。
+            // 该格式已废弃，但老用户的输出目录里可能仍有此文件——不删会让 BodySlide 读到重复分组。
             var legacy = Path.Combine(dir, SliderGroupFile.DefaultFileName);
             if (File.Exists(legacy))
             {

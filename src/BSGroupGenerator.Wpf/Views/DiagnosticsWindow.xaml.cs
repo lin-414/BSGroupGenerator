@@ -1,4 +1,5 @@
 using System.Windows;
+using BSGroupGenerator.Wpf.Services;
 
 namespace BSGroupGenerator.Wpf.Views;
 
@@ -16,6 +17,7 @@ public partial class DiagnosticsWindow : Window
     private void Copy_Click(object sender, RoutedEventArgs e)
     {
         Clipboard.SetText(ReportBox.Text);
-        MessageBox.Show(this, "已复制到剪贴板。", "诊断信息", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(this, L10n.Tr("L.Msg_CopiedToClipboard"), L10n.Tr("L.Diag_Title"),
+            MessageBoxButton.OK, MessageBoxImage.Information);
     }
 }

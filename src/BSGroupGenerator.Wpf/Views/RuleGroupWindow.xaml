@@ -49,8 +49,8 @@
             <ComboBox x:Name="GroupCombo" Grid.Row="0" Grid.Column="1" DisplayMemberPath="Name" />
             <TextBlock Grid.Row="1" Text="{DynamicResource L.RuleGroup_Direction}" />
             <ComboBox x:Name="DirectionCombo" Grid.Row="1" Grid.Column="1" SelectedIndex="0">
-                <ComboBoxItem Content="加入组" />
-                <ComboBoxItem Content="移出组" />
+                <ComboBoxItem Content="{DynamicResource L.RuleGroup_Add}" />
+                <ComboBoxItem Content="{DynamicResource L.RuleGroup_Remove}" />
             </ComboBox>
             <TextBlock Grid.Row="2" Text="{DynamicResource L.RuleGroup_ModKeywords}" />
             <TextBox x:Name="ModIncludeBox" Grid.Row="2" Grid.Column="1" Margin="0,3"

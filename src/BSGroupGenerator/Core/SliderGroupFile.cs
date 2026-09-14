@@ -26,7 +26,14 @@ public class SliderGroup
 /// </summary>
 public static class SliderGroupFile
 {
+    /// <summary>
+    /// WinForms 版（本工具的前身，UI/MainForm.cs）写出的单文件分组文件名。
+    /// 现役格式是"每组一个 &lt;组名&gt;.xml + 清单"，此常量只服务于旧格式的读取与清理：
+    /// 老用户的 SliderGroups 目录里可能仍有这个文件，不迁移会让 BodySlide 同时读到新旧两份分组。
+    /// 不是死代码，勿删。
+    /// </summary>
     public const string DefaultFileName = "BSGroupGenerator.xml";
+
     public const string ManifestFileName = "BSGroupGenerator.files.txt";
 
     private static readonly HashSet<string> ReservedDeviceNames = new(StringComparer.OrdinalIgnoreCase)

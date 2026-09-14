@@ -53,6 +53,7 @@
     <sys:String x:Key="L.Title_FilenameConflict">文件名冲突</sys:String>
     <sys:String x:Key="L.Title_NewGroup">新建组</sys:String>
     <sys:String x:Key="L.Title_RenameGroup">重命名组</sys:String>
+    <sys:String x:Key="L.Title_UnsavedChanges">未保存的修改</sys:String>
     <sys:String x:Key="L.Btn_Ok">确定</sys:String>
     <sys:String x:Key="L.Btn_Cancel">取消</sys:String>
     <sys:String x:Key="L.Btn_Close">关闭</sys:String>
@@ -178,6 +179,14 @@
 
 是否打开发布页下载？</sys:String>
     <sys:String x:Key="L.Msg_UpdateFailed">检查更新失败：{0}</sys:String>
+    <sys:String x:Key="L.Msg_AlreadyRunning">BS Group Generator 已经在运行。</sys:String>
+    <sys:String x:Key="L.Msg_OutputDirUndetermined">尚未完成扫描，无法确定输出目录。</sys:String>
+    <sys:String x:Key="L.Msg_CopiedToClipboard">已复制到剪贴板。</sys:String>
+    <sys:String x:Key="L.Msg_UnsavedOnExit" xml:space="preserve">当前有未保存的分组修改，直接退出会丢失。&#x0a;&#x0a;是：保存并退出&#x0a;否：不保存，直接退出&#x0a;取消：留在程序</sys:String>
+
+    <!-- 崩溃日志 -->
+    <sys:String x:Key="L.Crash_Fatal" xml:space="preserve">发生未处理的错误，程序即将退出。&#x0a;详细信息已写入 %APPDATA%\BSGroupGenerator\crash.log&#x0a;&#x0a;{0}</sys:String>
+    <sys:String x:Key="L.Crash_NonFatal" xml:space="preserve">发生了一个错误，已忽略（详情见 %APPDATA%\BSGroupGenerator\crash.log）。&#x0a;&#x0a;{0}</sys:String>
 
     <!-- 查看组 -->
     <sys:String x:Key="L.Members_Title">组「{0}」的成员</sys:String>
@@ -206,6 +215,8 @@
     <sys:String x:Key="L.RuleGroup_Explainer">按关键字把扫描到的服装批量加入/移出上方所选的组：任一关键字命中即算（分号分隔多个），条件变化时下方预览实时刷新；确认后点「应用」，常用条件可「存为预设」，扫描发现新装模组时会自动套用。</sys:String>
     <sys:String x:Key="L.RuleGroup_Target">目标组</sys:String>
     <sys:String x:Key="L.RuleGroup_Direction">方向</sys:String>
+    <sys:String x:Key="L.RuleGroup_Add">加入组</sys:String>
+    <sys:String x:Key="L.RuleGroup_Remove">移出组</sys:String>
     <sys:String x:Key="L.RuleGroup_ModKeywords">模组关键字</sys:String>
     <sys:String x:Key="L.RuleGroup_OutfitKeywords">服装关键字</sys:String>
     <sys:String x:Key="L.RuleGroup_ExcludeKeywords">排除关键字</sys:String>
@@ -253,6 +264,7 @@
     <sys:String x:Key="L.About_Compat">分组文件与 BodySlide 完全兼容；每个组生成一个以组名命名的独立文件，存放在 BodySlide 的 SliderGroups 目录。</sys:String>
 
     <!-- 帮助 -->
+    <sys:String x:Key="L.Help_Title">使用说明 — BS Group Generator</sys:String>
     <sys:String x:Key="L.Help_H1">一、快速上手（4 步）</sys:String>
     <sys:String x:Key="L.Help_01">本工具读取 Mod Organizer 2（MO2）安装的模组，让你把服装（BodySlide 滑块组）批量划进分组，并按组生成 BodySlide 原生格式的分组文件。</sys:String>
     <sys:String x:Key="L.Help_02">1. 选择 MO2 实例与配置（Profile）——程序自动发现全局实例与便携安装；Profile 会默认带上次使用的。</sys:String>
@@ -305,11 +317,14 @@
     <sys:String x:Key="L.Help_40">· 服装名后的（同名冲突）？该服装名在多个模组中都出现过，归属显示为优先级最高的模组；分组按名称匹配，不受影响。</sys:String>
     <sys:String x:Key="L.Help_41">· 输出目录里多了个 BSGroupGenerator.files.txt？那是本工具的清单文件，用于自动清理旧文件，BodySlide 不会读取它。</sys:String>
     <sys:String x:Key="L.Help_42">· 程序出错了？异常会写入 %APPDATA%\BSGroupGenerator\crash.log，可把该文件发给开发者。</sys:String>
-    <sys:String x:Key="L.Prompt_GroupName">Group name:</sys:String>
-    <sys:String x:Key="L.Prompt_NewGroupName">New group name:</sys:String>
-    <sys:String x:Key="L.Tree_ConflictSuffix"> (name conflict)</sys:String>
-    <sys:String x:Key="L.Tree_InGroupBadge">{0} [in group {1}/{2}]</sys:String>
-    <sys:String x:Key="L.Tree_InGroupPrefix" xml:space="preserve"> [in group </sys:String>
-    <sys:String x:Key="L.Tree_MatchHeader">{0} (matched {1}/{2})</sys:String>
-    <sys:String x:Key="L.Tree_NoMatchingMods">(no mods match the filters)</sys:String>
+
+    <!-- 输入框提示 -->
+    <sys:String x:Key="L.Prompt_GroupName">组名：</sys:String>
+    <sys:String x:Key="L.Prompt_NewGroupName">新组名：</sys:String>
+
+    <!-- 模组树节点文本（代码拼接，非 XAML 绑定） -->
+    <sys:String x:Key="L.Tree_ConflictSuffix">（同名冲突）</sys:String>
+    <sys:String x:Key="L.Tree_InGroupBadge">{0}　[组内 {1}/{2}]</sys:String>
+    <sys:String x:Key="L.Tree_MatchHeader">{0}（匹配 {1}/{2}）</sys:String>
+    <sys:String x:Key="L.Tree_NoMatchingMods">（没有符合过滤条件的模组）</sys:String>
 </ResourceDictionary>

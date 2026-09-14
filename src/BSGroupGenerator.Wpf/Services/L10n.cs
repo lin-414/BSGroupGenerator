@@ -27,9 +27,9 @@ public static class L10n
         });
     }
 
-    /// <summary>取词；缺键返回键名本身（缺翻译时可见、不空白）。</summary>
+    /// <summary>取词；缺键返回键名本身（缺翻译时可见、不空白）。无 Application 上下文（单测、设计器）时同样返回键名。</summary>
     public static string Tr(string key) =>
-        Application.Current.Resources[key] as string ?? key;
+        Application.Current?.Resources[key] as string ?? key;
 
     public static string TrF(string key, params object[] args) =>
         string.Format(Tr(key), args);

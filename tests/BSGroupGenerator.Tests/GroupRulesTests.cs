@@ -13,24 +13,41 @@ public class GroupRulesTests
         => Assert.Equal(expected, GroupRules.SplitKeywords(input));
 
     [Fact]
-    public void MatchesRequiresIncludeHit()
+    public void OutfitKeywordsRequireAHit()
     {
-        Assert.True(GroupRules.Matches("Dawn Priestess UBE", "IVY模组", ["ube"], [], matchOwner: false));
-        Assert.False(GroupRules.Matches("Dawn Priestess UBE", "IVY模组", ["cbbe"], [], matchOwner: false));
-        Assert.True(GroupRules.Matches("任意服装", "IVY模组", [], [], matchOwner: false)); // 留空=全部
+        Assert.True(Match("Dawn Priestess UBE", "IVY模组", ["ube"], [], []));
+        Assert.False(Match("Dawn Priestess UBE", "IVY模组", ["cbbe"], [], []));
+        Assert.True(Match("任意服装", "IVY模组", [], [], [])); // 留空 = 全部
     }
 
     [Fact]
-    public void MatchesOwnerWhenEnabled()
+    public void ModKeywordsNarrowToMatchingModsOnly()
     {
-        Assert.True(GroupRules.Matches("某服装", "HIMBO Core", ["himbo"], [], matchOwner: true));
-        Assert.False(GroupRules.Matches("某服装", "HIMBO Core", ["himbo"], [], matchOwner: false));
+        Assert.True(Match("某服装", "HIMBO Core", [], [], ["himbo"]));
+        Assert.False(Match("某服装", "HIMBO Core", [], [], ["cbbe"]));
+        // 模组关键字只筛模组、不参与匹配服装名，否则会把其他模组里的同名服装混进来
+        Assert.False(Match("himbo 服装", "其他模组", [], [], ["himbo"]));
     }
 
     [Fact]
     public void ExcludeWinsOverInclude()
     {
-        Assert.False(GroupRules.Matches("UBE 汉化版", "模组", ["ube"], ["汉化"], matchOwner: false));
-        Assert.True(GroupRules.Matches("UBE 原版", "模组", ["ube"], ["汉化"], matchOwner: false));
+        Assert.False(Match("UBE 汉化版", "模组", ["ube"], ["汉化"], []));
+        Assert.True(Match("UBE 原版", "模组", ["ube"], ["汉化"], []));
     }
+
+    [Fact]
+    public void UnassignedOnlySkipsAlreadyGroupedOutfits()
+    {
+        Assert.False(Match("任意服装", "模组", [], [], [], unassignedOnly: true, isInAnyGroup: true));
+        Assert.True(Match("任意服装", "模组", [], [], [], unassignedOnly: true, isInAnyGroup: false));
+        // 未开启"仅未分配"时，已入组与否不影响匹配
+        Assert.True(Match("任意服装", "模组", [], [], [], unassignedOnly: false, isInAnyGroup: true));
+    }
+
+    private static bool Match(string outfit, string owner,
+        string[] outfitKeywords, string[] outfitExcludeKeywords, string[] modKeywords,
+        bool unassignedOnly = false, bool isInAnyGroup = false) =>
+        GroupRules.MatchesOutfit(outfit, owner,
+            outfitKeywords, outfitExcludeKeywords, modKeywords, unassignedOnly, isInAnyGroup);
 }

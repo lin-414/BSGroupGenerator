@@ -289,7 +289,7 @@ public partial class MainWindow : Window
     {
         var dir = _vm.ResolveOutputDirectory();
         if (dir is null)
-            MessageBox.Show(this, "尚未完成扫描，无法确定输出目录。", "提示");
+            MessageBox.Show(this, L10n.Tr("L.Msg_OutputDirUndetermined"), L10n.Tr("L.Title_Tip"));
         else
             MainViewModel.OpenDirectory(dir);
     }
@@ -299,8 +299,8 @@ public partial class MainWindow : Window
         if (_vm.Store.Dirty)
         {
             var choice = MessageBox.Show(this,
-                "当前有未保存的分组修改，直接退出会丢失。\n\n是：保存并退出\n否：不保存，直接退出\n取消：留在程序",
-                "未保存的修改", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                L10n.Tr("L.Msg_UnsavedOnExit"),
+                L10n.Tr("L.Title_UnsavedChanges"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
             if (choice == MessageBoxResult.Cancel)
             {
                 e.Cancel = true;

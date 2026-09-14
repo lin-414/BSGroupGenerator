@@ -31,11 +31,14 @@ public static class CrashLog
     public static void ShowError(Exception? ex, bool isFatal)
     {
         Write(ex, isFatal);
+        // 文案走 L10n：崩溃处理器可能在 Application 已拆解后才触发，
+        // Tr/TrF 在无 Application 上下文时回落到键名，不会二次抛异常。
+        // 异常消息里的花括号必须先转义——TrF 内部是 string.Format，
+        // 在"处理未处理异常"的地方再抛 FormatException 会直接杀掉进程。
+        var message = (ex?.Message ?? "").Replace("{", "{{").Replace("}", "}}");
         System.Windows.MessageBox.Show(
-            isFatal
-                ? $"发生未处理的错误，程序即将退出。\n详细信息已写入 %APPDATA%\\BSGroupGenerator\\crash.log\n\n{ex?.Message}"
-                : $"发生了一个错误，已忽略（详情见 %APPDATA%\\BSGroupGenerator\\crash.log）。\n\n{ex?.Message}",
-            isFatal ? "错误" : "提示",
+            L10n.TrF(isFatal ? "L.Crash_Fatal" : "L.Crash_NonFatal", message),
+            L10n.Tr(isFatal ? "L.Title_Error" : "L.Title_Tip"),
             System.Windows.MessageBoxButton.OK,
             isFatal ? System.Windows.MessageBoxImage.Error : System.Windows.MessageBoxImage.Warning);
     }

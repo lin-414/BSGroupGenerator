@@ -240,8 +240,10 @@ public partial class MainViewModel
                 {
                     var inGroup = mod.Outfits.Count(o =>
                         group is not null && group.Members.Contains(o.Name, StringComparer.Ordinal));
-                    var baseHeader = RebuildHeaderBase(mod);
-                    var targetText = inGroup > 0 ? L10n.TrF("L.Tree_InGroupBadge", baseHeader, inGroup, mod.Outfits.Count) : baseHeader;
+                    // BaseHeader 是不含 [组内 x/y] 徽标的原始头部，直接取用，无需从 Text 里剥离
+                    var targetText = inGroup > 0
+                        ? L10n.TrF("L.Tree_InGroupBadge", mod.BaseHeader, inGroup, mod.Outfits.Count)
+                        : mod.BaseHeader;
                     if (node.Text != targetText)
                         node.Text = targetText;
                     node.IsMember = mod.Outfits.Count > 0 && inGroup == mod.Outfits.Count;
@@ -249,14 +251,6 @@ public partial class MainViewModel
                 }
             }
         }
-    }
-
-    /// <summary>从现有文本还原"基础头部"（去掉 [组内 x/y] 徽标）。</summary>
-    private static string RebuildHeaderBase(ModNodeVM mod)
-    {
-        var text = mod.Text;
-        var idx = text.IndexOf(L10n.Tr("L.Tree_InGroupPrefix"), StringComparison.Ordinal);
-        return idx >= 0 ? text[..idx] : text;
     }
 
     /// <summary>把左侧勾选的内容（分隔符/模组/服装）应用到当前组。</summary>

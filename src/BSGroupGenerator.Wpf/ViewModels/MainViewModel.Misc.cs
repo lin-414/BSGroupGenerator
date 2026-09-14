@@ -4,6 +4,11 @@ namespace BSGroupGenerator.Wpf.ViewModels;
 
 public partial class MainViewModel
 {
+    /// <summary>
+    /// 生成诊断报告（设置 → 诊断信息，供排查问题时复制给开发者）。
+    /// 刻意不做本地化：报告内嵌 Core 层的原始文案（BodySlideLocator 的解析步骤、SliderSetScanner 的
+    /// 覆盖层说明与警告），而 Core 不依赖 UI 层、无法取词；只把外层标题译成英文会变成中英混排，反而更难读。
+    /// </summary>
     public string BuildDiagnostics()
     {
         var sb = new System.Text.StringBuilder();
