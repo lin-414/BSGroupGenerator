@@ -221,12 +221,15 @@ Open the release page to download?</sys:String>
     <!-- New mods popup -->
     <sys:String x:Key="L.NewMods_Title">New outfit mods found</sys:String>
     <sys:String x:Key="L.NewMods_Target">Target group</sys:String>
+    <sys:String x:Key="L.NewMods_FilterOutfits">Filter outfits…</sys:String>
+    <sys:String x:Key="L.NewMods_FilterMods">Filter mods / separators…</sys:String>
+    <sys:String x:Key="L.NewMods_FilterCount">Showing {0} outfit(s) ({1} still to group)</sys:String>
     <sys:String x:Key="L.NewMods_PresetsBtn">Apply presets ({0})</sys:String>
     <sys:String x:Key="L.NewMods_PresetsTip">Run all saved rule presets (over all outfits); processed items are removed from the list. Manage presets under Tools → Rule presets.</sys:String>
     <sys:String x:Key="L.NewMods_TopRemaining">{0} outfit(s) still ungrouped ({1} new mod(s), {2} outfit(s) in this scan).</sys:String>
     <sys:String x:Key="L.NewMods_TopRemainingHint">Keep ticking → pick a target group → "Add selected". You can repeat with different target groups; "Close" stops anytime.</sys:String>
     <sys:String x:Key="L.NewMods_TopFirst">This scan found {0} new outfit mod(s) ({1} outfit(s) in total).</sys:String>
-    <sys:String x:Key="L.NewMods_TopFirstHint">Tick the mods to group (click + to expand outfits), pick a target group, then click "Add selected". Repeat with different groups; the window closes itself when everything is processed. "Close" stops anytime.</sys:String>
+    <sys:String x:Key="L.NewMods_TopFirstHint">Tick the mods to group (click + to expand outfits), pick a target group, then click "Add selected". When the list is long, use the two filter boxes above to find things fast (left filters outfit names, right filters mod / separator names) — ticks survive filtering. Repeat with different groups; the window closes itself when everything is processed. "Close" stops anytime.</sys:String>
     <sys:String x:Key="L.NewMods_NoneSelected">No outfits selected</sys:String>
     <sys:String x:Key="L.NewMods_Summary">Will add {0} outfit(s) from {1} mod(s)</sys:String>
     <sys:String x:Key="L.NewMods_SelectFirst">Tick what to group first (tick a mod or a separator to select in bulk).</sys:String>
@@ -327,7 +330,7 @@ One file per group, named after the group: {1}{2} ({3}).
     <sys:String x:Key="L.Help_15">"⋯" → "Rule grouping": batch work by keyword — see section 5.</sys:String>
     <sys:String x:Key="L.Help_16">Undo (Ctrl+Z, or Edit → Undo): rolls back the last 30 grouping actions — see section 6.</sys:String>
     <sys:String x:Key="L.Help_17">File → Import group files…: merge other group XMLs into the current list and keep editing.</sys:String>
-    <sys:String x:Key="L.Help_18">New-mod reminder: when a scan finds newly installed outfit mods a popup lists them by separator → mod → outfit (same as the main tree, expandable) — tick, pick a target group, click "Add selected" (undoable), and you can repeat with different target groups. Closing defers it; you can still find those outfits later via "Unassigned only".</sys:String>
+    <sys:String x:Key="L.Help_18">New-mod reminder: when a scan finds newly installed outfit mods a popup lists them by separator → mod → outfit (same as the main tree, expandable) — tick, pick a target group, click "Add selected" (undoable), and you can repeat with different target groups. For long lists use the two filter boxes above (left filters outfit names, right filters mod / separator names); ticks survive filtering. Closing defers it; you can still find those outfits later via "Unassigned only".</sys:String>
     <sys:String x:Key="L.Help_S2_Status">[Status bar]</sys:String>
     <sys:String x:Key="L.Help_19">Left: statistics (mods / outfits / assigned / unassigned). "Diagnostics" lives under the Tools menu; the run log is a collapsible summary line under the save button — click it to expand; once expanded it is colour-coded by level, copyable, clearable, and resizable by dragging.</sys:String>
     <sys:String x:Key="L.Help_20">Right: the current output folder; hover for the full path.</sys:String>

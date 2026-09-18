@@ -221,12 +221,15 @@
     <!-- 新装模组弹窗 -->
     <sys:String x:Key="L.NewMods_Title">发现新服装模组</sys:String>
     <sys:String x:Key="L.NewMods_Target">目标组</sys:String>
+    <sys:String x:Key="L.NewMods_FilterOutfits">过滤服装名…</sys:String>
+    <sys:String x:Key="L.NewMods_FilterMods">过滤模组 / 分隔符…</sys:String>
+    <sys:String x:Key="L.NewMods_FilterCount">当前显示 {0} 个服装（还有 {1} 个待归组）</sys:String>
     <sys:String x:Key="L.NewMods_PresetsBtn">按预设分组（{0} 条）</sys:String>
     <sys:String x:Key="L.NewMods_PresetsTip">依次执行已保存的规则预设（作用于全部服装），已归组的项会从列表移除；预设可在「工具 → 规则预设」管理</sys:String>
     <sys:String x:Key="L.NewMods_TopRemaining">还剩 {0} 个服装未归组（本次新模组 {1} 个、共 {2} 个服装）。</sys:String>
     <sys:String x:Key="L.NewMods_TopRemainingHint">继续勾选 → 选目标组 → 「加入所选组」，可换不同目标组分多批处理；点「关闭」随时结束。</sys:String>
     <sys:String x:Key="L.NewMods_TopFirst">本次扫描发现 {0} 个新服装模组（共 {1} 个服装）。</sys:String>
-    <sys:String x:Key="L.NewMods_TopFirstHint">勾选要归组的模组（点 + 可展开查看具体服装），选好目标组后点「加入所选组」；可分多次选不同目标组，全部处理完自动关闭，点「关闭」也可随时结束。</sys:String>
+    <sys:String x:Key="L.NewMods_TopFirstHint">勾选要归组的模组（点 + 可展开查看具体服装），选好目标组后点「加入所选组」；列表长时用上方两个过滤框快速定位（左框筛服装名、右框筛模组 / 分隔符名），勾选状态不会因过滤而丢失。可分多次选不同目标组，全部处理完自动关闭，点「关闭」也可随时结束。</sys:String>
     <sys:String x:Key="L.NewMods_NoneSelected">未勾选任何服装</sys:String>
     <sys:String x:Key="L.NewMods_Summary">将加入 {0} 个服装 · 来自 {1} 个模组</sys:String>
     <sys:String x:Key="L.NewMods_SelectFirst">请先勾选要归组的内容（可勾选模组或分隔符批量全选）。</sys:String>
@@ -327,7 +330,7 @@
     <sys:String x:Key="L.Help_15">「⋯」→「规则归组」：按关键字批量操作，详见第五章。</sys:String>
     <sys:String x:Key="L.Help_16">撤销（Ctrl+Z 或菜单「编辑 → 撤销」）：回退最近 30 步分组操作，详见第六章。</sys:String>
     <sys:String x:Key="L.Help_17">菜单「文件 → 导入组文件…」：把其他分组 XML 合并进当前列表继续编辑。</sys:String>
-    <sys:String x:Key="L.Help_18">新装模组提醒：扫描发现新装的服装模组时自动弹窗，按 分隔符 → 模组 → 服装 分层列出（与主界面一致，可展开看具体服装）——勾选、选目标组、点「加入所选组」即可归组（可撤销），可分多批换目标组。关闭则暂不处理，之后仍可用「仅看未分配」找到这些服装。</sys:String>
+    <sys:String x:Key="L.Help_18">新装模组提醒：扫描发现新装的服装模组时自动弹窗，按 分隔符 → 模组 → 服装 分层列出（与主界面一致，可展开看具体服装）——勾选、选目标组、点「加入所选组」即可归组（可撤销），可分多批换目标组；列表长时用上方两个过滤框定位（左框筛服装名、右框筛模组 / 分隔符名，勾选状态不会因过滤丢失）。关闭则暂不处理，之后仍可用「仅看未分配」找到这些服装。</sys:String>
     <sys:String x:Key="L.Help_S2_Status">【状态栏】</sys:String>
     <sys:String x:Key="L.Help_19">左侧：统计（模组/服装/已分配/未分配）。「诊断信息」在菜单「工具」下；运行日志是保存按钮下方可折叠的一条摘要，点一下展开，展开后按级别着色、可复制、可清空，高度可拖拽。</sys:String>
     <sys:String x:Key="L.Help_20">右侧：当前输出目录描述，悬停显示完整路径。</sys:String>

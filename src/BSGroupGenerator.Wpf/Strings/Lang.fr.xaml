@@ -216,12 +216,15 @@
     <!-- New mods popup -->
     <sys:String x:Key="L.NewMods_Title">Nouveaux mods de tenues détectés</sys:String>
     <sys:String x:Key="L.NewMods_Target">Groupe cible</sys:String>
+    <sys:String x:Key="L.NewMods_FilterOutfits">Filtrer les tenues…</sys:String>
+    <sys:String x:Key="L.NewMods_FilterMods">Filtrer les mods / séparateurs…</sys:String>
+    <sys:String x:Key="L.NewMods_FilterCount">{0} tenue(s) affichée(s) ({1} encore à grouper)</sys:String>
     <sys:String x:Key="L.NewMods_PresetsBtn">Appliquer les préréglages ({0})</sys:String>
     <sys:String x:Key="L.NewMods_PresetsTip">Exécute tous les préréglages de règles enregistrés (sur toutes les tenues) ; les éléments traités sont retirés de la liste. Gérez les préréglages dans Outils → Préréglages de règles.</sys:String>
     <sys:String x:Key="L.NewMods_TopRemaining">{0} tenue(s) encore non groupée(s) ({1} nouveau(x) mod(s), {2} tenue(s) dans cette analyse).</sys:String>
     <sys:String x:Key="L.NewMods_TopRemainingHint">Continuez à cocher → choisissez un groupe cible → « Ajouter la sélection ». Vous pouvez répéter avec d'autres groupes ; « Fermer » arrête à tout moment.</sys:String>
     <sys:String x:Key="L.NewMods_TopFirst">Cette analyse a trouvé {0} nouveau(x) mod(s) de tenues ({1} tenue(s) au total).</sys:String>
-    <sys:String x:Key="L.NewMods_TopFirstHint">Cochez les mods à grouper (cliquez sur + pour déplier les tenues), choisissez un groupe cible, puis cliquez sur « Ajouter la sélection ». Répétez avec d'autres groupes ; la fenêtre se ferme d'elle-même quand tout est traité. « Fermer » arrête à tout moment.</sys:String>
+    <sys:String x:Key="L.NewMods_TopFirstHint">Cochez les mods à grouper (cliquez sur + pour déplier les tenues), choisissez un groupe cible, puis cliquez sur « Ajouter la sélection ». Si la liste est longue, servez-vous des deux champs de filtre ci-dessus (celui de gauche filtre les noms de tenues, celui de droite les noms de mods / séparateurs) ; les coches survivent au filtrage. Répétez avec d'autres groupes ; la fenêtre se ferme d'elle-même quand tout est traité. « Fermer » arrête à tout moment.</sys:String>
     <sys:String x:Key="L.NewMods_NoneSelected">Aucune tenue sélectionnée</sys:String>
     <sys:String x:Key="L.NewMods_Summary">Ajout de {0} tenue(s) depuis {1} mod(s)</sys:String>
     <sys:String x:Key="L.NewMods_SelectFirst">Cochez d'abord ce qu'il faut grouper (cochez un mod ou un séparateur pour tout sélectionner).</sys:String>
@@ -322,7 +325,7 @@ Un fichier par groupe, nommé d'après le groupe : {1}{2} ({3}).
     <sys:String x:Key="L.Help_15">« ⋯ » → « Regroupement par règles » : travail par lot à partir de mots-clés, voir section 5.</sys:String>
     <sys:String x:Key="L.Help_16">Annuler (Ctrl+Z, ou Édition → Annuler) : revient sur les 30 dernières actions de regroupement, voir section 6.</sys:String>
     <sys:String x:Key="L.Help_17">Fichier → Importer des fichiers de groupes… : fusionne d'autres XML de groupes dans la liste courante pour continuer à éditer.</sys:String>
-    <sys:String x:Key="L.Help_18">Rappel des nouveaux mods : lorsqu'une analyse trouve des mods de tenues nouvellement installés, une fenêtre les liste par séparateur → mod → tenue (comme l'arborescence principale, dépliable) — cochez, choisissez un groupe cible, cliquez sur « Ajouter la sélection » (annulable), et vous pouvez répéter avec d'autres groupes cibles. Fermer reporte l'opération ; ces tenues restent trouvables via « Non attribuées uniquement ».</sys:String>
+    <sys:String x:Key="L.Help_18">Rappel des nouveaux mods : lorsqu'une analyse trouve des mods de tenues nouvellement installés, une fenêtre les liste par séparateur → mod → tenue (comme l'arborescence principale, dépliable) — cochez, choisissez un groupe cible, cliquez sur « Ajouter la sélection » (annulable), et vous pouvez répéter avec d'autres groupes cibles. Pour les listes longues, utilisez les deux champs de filtre ci-dessus (celui de gauche filtre les noms de tenues, celui de droite les noms de mods / séparateurs) ; les coches survivent au filtrage. Fermer reporte l'opération ; ces tenues restent trouvables via « Non attribuées uniquement ».</sys:String>
     <sys:String x:Key="L.Help_S2_Status">[Barre d'état]</sys:String>
     <sys:String x:Key="L.Help_19">À gauche : les statistiques (mods / tenues / attribuées / non attribuées). « Diagnostic » se trouve dans le menu Outils ; le journal d'exécution est une ligne de résumé repliable sous le bouton d'enregistrement — cliquez pour la déplier ; une fois déplié, il est coloré par niveau, copiable, effaçable et redimensionnable par glissement.</sys:String>
     <sys:String x:Key="L.Help_20">À droite : le dossier de sortie actuel ; survolez-le pour obtenir le chemin complet.</sys:String>
