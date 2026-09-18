@@ -38,11 +38,11 @@ public class Mo2Instance
         {
             var kind = Kind switch
             {
-                Mo2InstanceKind.Portable => "便携",
-                Mo2InstanceKind.Global => "全局",
-                _ => "手动",
+                Mo2InstanceKind.Portable => CoreStrings.Get("L.Core_InstancePortable"),
+                Mo2InstanceKind.Global => CoreStrings.Get("L.Core_InstanceGlobal"),
+                _ => CoreStrings.Get("L.Core_InstanceManual"),
             };
-            var game = string.IsNullOrEmpty(GameName) ? "未配置游戏" : GameName;
+            var game = string.IsNullOrEmpty(GameName) ? CoreStrings.Get("L.Core_InstanceNoGame") : GameName;
             return $"{Name}（{kind} · {game}）";
         }
     }
@@ -54,7 +54,7 @@ public class Mo2Instance
             var value = Get("Settings", "base_directory");
             if (string.IsNullOrWhiteSpace(value))
                 return InstanceDir;
-            return Path.GetFullPath(value.Replace("%BASE_DIR%", InstanceDir));
+            return ResolveAgainst(value, InstanceDir);
         }
     }
 
@@ -89,17 +89,25 @@ public class Mo2Instance
     public string GamePath => Get("General", "gamePath");
     public string SelectedProfile => Get("General", "selected_profile");
 
-    /// <summary>实例内所有 profile 名（目录下含 modlist.txt）。</summary>
+    /// <summary>实例内所有 profile 名（目录下含 modlist.txt）。枚举失败时返回已收集的部分，不抛。</summary>
     public List<string> GetProfiles()
     {
         var result = new List<string>();
         var dir = ProfilesDirectory;
         if (!Directory.Exists(dir))
             return result;
-        foreach (var sub in Directory.EnumerateDirectories(dir))
+        try
         {
-            if (File.Exists(Path.Combine(sub, "modlist.txt")))
-                result.Add(Path.GetFileName(sub));
+            foreach (var sub in Directory.EnumerateDirectories(dir))
+            {
+                if (File.Exists(Path.Combine(sub, "modlist.txt")))
+                    result.Add(Path.GetFileName(sub));
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            // 个别子目录无权限/设备故障时只丢这一批（枚举是惰性的，异常可能出现在中途）：
+            // 这条链路在 ViewModel 构造期被调用，抛出去就是启动即崩
         }
         result.Sort(StringComparer.OrdinalIgnoreCase);
         return result;
@@ -113,7 +121,19 @@ public class Mo2Instance
     {
         if (string.IsNullOrWhiteSpace(configured))
             return Path.Combine(BaseDirectory, defaultFolder);
-        return Path.GetFullPath(configured.Replace("%BASE_DIR%", BaseDirectory));
+        return ResolveAgainst(configured, BaseDirectory);
+    }
+
+    /// <summary>把配置里的路径解析成绝对路径：先展开 %BASE_DIR%，相对路径一律相对 baseDir。
+    /// Path.GetFullPath 对相对路径是按**当前工作目录**解析的，直接调用会让结果取决于进程从哪儿启动——
+    /// 配置里的相对路径只有"相对基准目录"这一种说得通的语义（base_directory 相对实例目录、
+    /// mod/profiles 相对 base_directory）。</summary>
+    private static string ResolveAgainst(string path, string baseDir)
+    {
+        var resolved = path.Replace("%BASE_DIR%", baseDir);
+        return Path.IsPathFullyQualified(resolved)
+            ? Path.GetFullPath(resolved)
+            : Path.GetFullPath(Path.Combine(baseDir, resolved));
     }
 
     private string Get(string section, string key)

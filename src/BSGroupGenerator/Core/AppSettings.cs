@@ -39,12 +39,41 @@ public class AppSettings
     /// <summary>界面主题："boutique"（暗色，默认）或 "light"（上一版亮色）。</summary>
     public string UiTheme { get; set; } = "boutique";
 
-    /// <summary>界面语言："zh"（中文，默认）或 "en"。</summary>
+    /// <summary>界面语言："zh"（中文，默认）、"en"、"ru" 或 "fr"。未知值由 L10n.Apply 回落到 "zh"。</summary>
     public string UiLanguage { get; set; } = "zh";
 
+    /// <summary>用户在提示框里勾过「不再提示」的项目（如更新提示）。键由调用方定义，仅做等值比较。</summary>
+    public List<string> SuppressedPrompts { get; set; } = new();
+
+    private static string? _directoryOverride;
+
+    /// <summary>设置目录覆盖（null = 真实 <c>%APPDATA%\BSGroupGenerator</c>）。
+    /// 单测必须能避开用户真实的设置文件——否则跑一次测试就会改写用户的实例/Profile/写盘模式。
+    /// 换目录等于换了一整套设置，所以这里顺带把共享实例作废，下一次 <see cref="Shared"/> 会重新加载。</summary>
+    public static string? DirectoryOverride
+    {
+        get => _directoryOverride;
+        set
+        {
+            _directoryOverride = value;
+            _shared = null;
+        }
+    }
+
     private static string SettingsDir =>
+        DirectoryOverride ??
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BSGroupGenerator");
     private static string SettingsPath => Path.Combine(SettingsDir, "settings.json");
+
+    private static AppSettings? _shared;
+
+    /// <summary>进程内共享的设置实例：App 启动时加载一次（<see cref="Use"/>）并登记，
+    /// 界面层直接取用即可——早先 App 与 ViewModel 各自 <see cref="Load"/> 一遍，后加载的那份会把
+    /// 先加载那份上刚改的设置覆盖回去。没有 App 上下文（单测）时惰性加载，行为与各自 Load 一致。</summary>
+    public static AppSettings Shared => _shared ??= Load();
+
+    /// <summary>登记共享实例（App 启动用），返回同一个实例便于链式取用。</summary>
+    public static AppSettings Use(AppSettings instance) => _shared = instance;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {

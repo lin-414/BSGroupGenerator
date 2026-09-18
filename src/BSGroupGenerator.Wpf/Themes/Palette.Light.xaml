@@ -1,23 +1,38 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ── 亮色色板「现代亮色」（v1.1 上一版外观，Swiss/Minimalism，保留可切换）──
-         对比度已核对：Text 0F172A/白 ≈ 17:1，TextDim 475569/白 ≈ 7.4:1，Accent 2563EB/白 ≈ 5.2:1，Member 047857/白 ≈ 4.9:1 -->
+    <!-- ── 亮色色板「现代亮色」（Swiss/Minimalism，保留可切换）──
+         对比度不靠注释保证：改色值后跑 python tools/verify_contrast.py 逐对断言（CI 门禁）。
+         阈值：正文 ≥ 4.5:1（WCAG 1.4.3），UI 组件边界 ≥ 3:1（1.4.11）。 -->
     <Color x:Key="C.Window">#F8FAFC</Color>
     <Color x:Key="C.Scrim">#4D000000</Color>
     <Color x:Key="C.Panel">#FFFFFF</Color>
     <Color x:Key="C.Card">#FFFFFF</Color>
     <Color x:Key="C.Border">#E4E7EB</Color>
     <Color x:Key="C.BorderSoft">#EDF0F4</Color>
+    <!-- 未勾选复选框边框专用：Border 压白底只有 1.24:1，勾选入口看不见。
+         本键需 ≥ 3:1，不能复用 Border。 -->
+    <Color x:Key="C.CheckBorder">#75859B</Color>
     <Color x:Key="C.Text">#0F172A</Color>
     <Color x:Key="C.TextDim">#475569</Color>
+    <!-- Accent = 实心按钮底（要够暗才压得住白字）；AccentBorder = 边框/勾选线。
+         亮色下两者亮度要求同向，但仍按语义分开取值，避免以后调色时互相牵制。 -->
     <Color x:Key="C.Accent">#2563EB</Color>
+    <Color x:Key="C.AccentBorder">#3B82F6</Color>
     <Color x:Key="C.AccentHover">#1D4ED8</Color>
     <Color x:Key="C.AccentSoft">#EFF6FF</Color>
     <Color x:Key="C.AccentText">#2563EB</Color>
     <Color x:Key="C.Member">#047857</Color>
-    <Color x:Key="C.Conflict">#2563EB</Color>
+    <!-- 冲突色必须与 Accent 分开：同色会让树里的冲突项与选中态/链接混淆 -->
+    <Color x:Key="C.Conflict">#C2410C</Color>
+    <!-- Danger = 危险文字/描边（压卡片底）；DangerSolid = 危险实心按钮底（压白字） -->
     <Color x:Key="C.Danger">#DC2626</Color>
+    <Color x:Key="C.DangerSolid">#B91C1C</Color>
+    <!-- 警告三件套：Warn = 实心警示底（配白字），WarnText = 卡片上的警示文字，
+         WarnSoft = 警示底纹（折叠日志摘要条等） -->
+    <Color x:Key="C.Warn">#B45309</Color>
+    <Color x:Key="C.WarnText">#92400E</Color>
+    <Color x:Key="C.WarnSoft">#FFFBEB</Color>
     <Color x:Key="C.Hover">#F1F3F5</Color>
     <Color x:Key="C.Selected">#DBEAFE</Color>
     <Color x:Key="C.Navy">#1E3A5F</Color>
@@ -29,9 +44,11 @@
     <SolidColorBrush x:Key="B.Card" Color="{StaticResource C.Card}" />
     <SolidColorBrush x:Key="B.Border" Color="{StaticResource C.Border}" />
     <SolidColorBrush x:Key="B.BorderSoft" Color="{StaticResource C.BorderSoft}" />
+    <SolidColorBrush x:Key="B.CheckBorder" Color="{StaticResource C.CheckBorder}" />
     <SolidColorBrush x:Key="B.Text" Color="{StaticResource C.Text}" />
     <SolidColorBrush x:Key="B.TextDim" Color="{StaticResource C.TextDim}" />
     <SolidColorBrush x:Key="B.Accent" Color="{StaticResource C.Accent}" />
+    <SolidColorBrush x:Key="B.AccentBorder" Color="{StaticResource C.AccentBorder}" />
     <SolidColorBrush x:Key="B.AccentHover" Color="{StaticResource C.AccentHover}" />
     <SolidColorBrush x:Key="B.AccentSoft" Color="{StaticResource C.AccentSoft}" />
     <SolidColorBrush x:Key="B.AccentText" Color="{StaticResource C.AccentText}" />
@@ -40,6 +57,10 @@
     <SolidColorBrush x:Key="B.Hover" Color="{StaticResource C.Hover}" />
     <SolidColorBrush x:Key="B.Selected" Color="{StaticResource C.Selected}" />
     <SolidColorBrush x:Key="B.Danger" Color="{StaticResource C.Danger}" />
+    <SolidColorBrush x:Key="B.DangerSolid" Color="{StaticResource C.DangerSolid}" />
+    <SolidColorBrush x:Key="B.Warn" Color="{StaticResource C.Warn}" />
+    <SolidColorBrush x:Key="B.WarnText" Color="{StaticResource C.WarnText}" />
+    <SolidColorBrush x:Key="B.WarnSoft" Color="{StaticResource C.WarnSoft}" />
     <SolidColorBrush x:Key="B.Navy" Color="{StaticResource C.Navy}" />
     <SolidColorBrush x:Key="B.CheckMark" Color="{StaticResource C.CheckMark}" />
 </ResourceDictionary>

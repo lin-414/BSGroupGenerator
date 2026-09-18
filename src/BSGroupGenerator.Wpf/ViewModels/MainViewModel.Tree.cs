@@ -26,7 +26,10 @@ public partial class MainViewModel
 
     private void DebounceRebuild()
     {
+        // Cancel 之后旧 CTS 已无用（每次输入都会新建一个）：不 Dispose 就是把内核等待句柄
+        // 攒到下一次 GC——频繁敲过滤词时这些句柄会成堆滞留
         _filterDebounce?.Cancel();
+        _filterDebounce?.Dispose();
         var cts = _filterDebounce = new CancellationTokenSource();
         var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
         _ = Task.Delay(350, cts.Token).ContinueWith(_ =>
@@ -34,6 +37,14 @@ public partial class MainViewModel
             if (!cts.IsCancellationRequested)
                 RebuildTree();
         }, cts.Token, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    }
+
+    /// <summary>窗口关闭时收尾防抖计时（ViewModel 不会再收到输入变更）。</summary>
+    private void DisposeDebounce()
+    {
+        _filterDebounce?.Cancel();
+        _filterDebounce?.Dispose();
+        _filterDebounce = null;
     }
 
     private bool OutfitVisible(OutfitEntry outfit)
@@ -61,11 +72,8 @@ public partial class MainViewModel
         if (_closed)
             return;
 
-        // 记录展开状态，重建后恢复
-        HashSet<string> expanded = new();
-        foreach (var node in WalkRoots())
-            if (node.IsExpanded)
-                expanded.Add(Chain(node));
+        // 记录展开状态，重建后恢复（键的算法见 TreeExpandState）
+        var expanded = TreeExpandState.Capture(TreeRoots);
 
         var filter = FilterText.Trim();
         var modFilter = ModFilterText.Trim();
@@ -90,26 +98,29 @@ public partial class MainViewModel
         }
 
         TreeRoots = newRoots;
-        foreach (var node in WalkRoots())
-            if (expanded.Contains(Chain(node)))
-                node.IsExpanded = true;
+        // 只给根节点挂回调与根集合：子节点经 Parent 链向上取，懒物化的服装行不必逐个接线
+        foreach (var root in newRoots)
+        {
+            root.CheckedChanged = RefreshTransferState;
+            root.Roots = newRoots;
+        }
+        TreeExpandState.Restore(newRoots, expanded);
 
         UpdateCounts();
         UpdateTitle();
+        RefreshTransferState();
+        OnPropertyChanged(nameof(ShowTreeEmptyState));
     }
+
+    /// <summary>树完全为空（还没扫描）时给一句空状态文案。
+    /// 扫描完成但被过滤空的情况由树内的占位节点负责，两者不会同时出现。</summary>
+    public bool ShowTreeEmptyState => Scan is null;
 
     private IEnumerable<NodeVM> WalkRoots()
     {
         foreach (var root in TreeRoots)
             foreach (var n in root.WalkSelfAndDescendants())
                 yield return n;
-    }
-
-    private static string Chain(NodeVM node)
-    {
-        var parent = node.Parent;
-        var index = parent?.Children.IndexOf(node) ?? -1;
-        return (parent is null ? "" : Chain(parent)) + $"{node.Kind}{index}/";
     }
 
     private void BuildFlatTree(ObservableCollection<NodeVM> roots,
@@ -144,7 +155,7 @@ public partial class MainViewModel
             }
 
             var onDisk = SelectedInstance is not null &&
-                         Directory.Exists(Path.Combine(SelectedInstance.ModsDirectory, entry.Name));
+                         ModDirExists(Path.Combine(SelectedInstance.ModsDirectory, entry.Name));
             outfitsByOwner.TryGetValue(entry.Name, out var outfits);
             outfits ??= [];
             if (outfits.Count > 0)
@@ -229,8 +240,10 @@ public partial class MainViewModel
                 case OutfitNodeVM outfit:
                 {
                     var member = group is not null && group.Members.Contains(outfit.OutfitName, StringComparer.Ordinal);
-                    var targetText = (member ? "✔ " : "") +
-                                     (outfit.HasConflict ? outfit.OutfitName + L10n.Tr("L.Tree_ConflictSuffix") : outfit.OutfitName);
+                    // 成员标记由视图的独立徽标呈现（绑定 IsMember），文本里不再拼 "✔ "
+                    var targetText = outfit.HasConflict
+                        ? outfit.OutfitName + L10n.Tr("L.Tree_ConflictSuffix")
+                        : outfit.OutfitName;
                     if (node.Text != targetText)
                         node.Text = targetText;
                     node.IsMember = member;
@@ -264,6 +277,23 @@ public partial class MainViewModel
             return;
         }
 
+        var names = CollectCheckedOutfitNames();
+        if (names.Count == 0)
+        {
+            NotifyUser(L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_NothingChecked"));
+            return;
+        }
+
+        Store.ApplyToCurrent(names, add);
+        Log(L10n.TrF("L.Log_Applied", names.Count, L10n.Tr(add ? "L.Word_Add" : "L.Word_Remove"), Store.Current!.Name, Store.Current!.Members.Count));
+        RefreshTree();
+        RefreshGroupsListPreserveSelection();
+    }
+
+    /// <summary>当前勾选内容展开后的服装名集合。搬运按钮上的数量与实际执行用同一份计算，
+    /// 不会出现"按钮说 12 个、实际动了 9 个"的偏差。</summary>
+    private HashSet<string> CollectCheckedOutfitNames()
+    {
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var node in WalkRoots())
         {
@@ -285,17 +315,43 @@ public partial class MainViewModel
                     break;
             }
         }
+        return names;
+    }
 
-        if (names.Count == 0)
-        {
-            NotifyUser(L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_NothingChecked"));
-            return;
-        }
+    // ── 搬运操作栏（中间列） ──
+    // 勾选数量与按钮可用性都从树上现算：不再需要用户先点按钮才被告知"还没勾选"。
+    [ObservableProperty] private int _checkedOutfitCount;
 
-        Store.ApplyToCurrent(names, add);
-        Log(L10n.TrF("L.Log_Applied", names.Count, L10n.Tr(add ? "L.Word_Add" : "L.Word_Remove"), Store.Current!.Name, Store.Current!.Members.Count));
-        RefreshTree();
-        RefreshGroupsListPreserveSelection();
+    public string TransferAddLabel => CheckedOutfitCount > 0
+        ? L10n.TrF("L.Transfer_AddCount", CheckedOutfitCount)
+        : L10n.Tr("L.Transfer_Add");
+
+    public string TransferRemoveLabel => CheckedOutfitCount > 0
+        ? L10n.TrF("L.Transfer_RemoveCount", CheckedOutfitCount)
+        : L10n.Tr("L.Transfer_Remove");
+
+    public bool CanTransferAdd => CheckedOutfitCount > 0 && Store.Current is not null;
+    public bool CanTransferRemove => CanTransferAdd;
+
+    public string TransferAddTip => TransferTip("L.Transfer_AddTip");
+    public string TransferRemoveTip => TransferTip("L.Transfer_RemoveTip");
+
+    /// <summary>按钮置灰时也要能说清"为什么点不了"，所以把原因放在 ToolTip 上
+    /// （配合 ToolTipService.ShowOnDisabled），而不是等用户点了再弹框。</summary>
+    private string TransferTip(string actionKey) =>
+        Store.Current is null ? L10n.Tr("L.Transfer_NoGroup")
+        : CheckedOutfitCount == 0 ? L10n.Tr("L.Transfer_NoneChecked")
+        : L10n.TrF(actionKey, CheckedOutfitCount, Store.Current.Name);
+
+    public void RefreshTransferState()
+    {
+        CheckedOutfitCount = CollectCheckedOutfitNames().Count;
+        OnPropertyChanged(nameof(TransferAddLabel));
+        OnPropertyChanged(nameof(TransferRemoveLabel));
+        OnPropertyChanged(nameof(CanTransferAdd));
+        OnPropertyChanged(nameof(CanTransferRemove));
+        OnPropertyChanged(nameof(TransferAddTip));
+        OnPropertyChanged(nameof(TransferRemoveTip));
     }
 
     [RelayCommand]
@@ -332,6 +388,8 @@ public partial class MainViewModel
     }
 
     // ── 组列表 ──
+    public bool IsGroupsEmpty => Groups.Count == 0;
+
     public void RefreshGroupsList()
     {
         var selectedName = Store.Current?.Name;
@@ -340,6 +398,8 @@ public partial class MainViewModel
         var index = Store.Groups.ToList().FindIndex(g => g.Name == selectedName);
         SelectedGroupIndex = index >= 0 ? index : (Store.Count > 0 ? 0 : -1);
         UpdateGroupInfo();
+        OnPropertyChanged(nameof(IsGroupsEmpty));
+        RefreshTransferState();
     }
 
     /// <summary>应用勾选后调用：不清空选中位置。</summary>
@@ -347,6 +407,7 @@ public partial class MainViewModel
 
     partial void OnSelectedGroupIndexChanged(int value)
     {
+        RefreshTransferState(); // 目标组变了，搬运按钮的可用性与提示随之变
         if (value < 0 || value >= Store.Count)
             return;
         Store.SelectGroup(Store.Groups[value].Name);
@@ -386,7 +447,8 @@ public partial class MainViewModel
             NotifyUser(L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_DuplicateGroup"), warning: true);
             return;
         }
-        Store.Snapshot();
+        // 不再在这里额外 Store.Snapshot()：RenameGroup 内部已经入了一次快照。多压一次会让
+        // 用户的一次重命名占掉两步撤销——第二次撤销看起来"点了没反应"。
         var (ok, error) = Store.RenameGroup(group.Name, newName);
         if (!ok)
         {
@@ -403,7 +465,7 @@ public partial class MainViewModel
         var group = Store.Current;
         if (group is null)
             return;
-        Store.Snapshot();
+        // 快照由 DeleteGroup 内部负责（同重命名，避免一次操作占两步撤销）
         Store.DeleteGroup(group.Name);
         Log(L10n.TrF("L.Log_DeletedGroup", group.Name));
         SelectedGroupIndex = -1;
@@ -422,11 +484,8 @@ public partial class MainViewModel
                 failures.Add($"{Path.GetFileName(file)}：{error}");
                 continue;
             }
-            if (!any)
-            {
-                Store.Snapshot();
-                any = true;
-            }
+            any = true;
+            // 快照由 Store.Import 内部负责（一次导入 = 一步撤销；这里再压一次会让撤销多走一步空转）
             var (addedGroups, addedMembers) = Store.Import(imported);
             Log(L10n.TrF("L.Log_Imported", file, addedGroups, addedMembers));
         }

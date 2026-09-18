@@ -57,19 +57,19 @@ public static class BodySlideLocator
         }
 
         if (!string.IsNullOrWhiteSpace(previousDir))
-            Add(previousDir, "上次使用");
+            Add(previousDir, CoreStrings.Get("L.Core_CandLastUsed"));
 
         foreach (var (_, dir) in enabledMods)
         {
-            Add(dir, "MO2 模组（根目录）");
-            Add(Path.Combine(dir, "Tools", "BodySlide"), "MO2 模组（Tools\\BodySlide）");
-            Add(Path.Combine(dir, "CalienteTools", "BodySlide"), "MO2 模组（CalienteTools\\BodySlide）");
+            Add(dir, CoreStrings.Get("L.Core_CandModRoot"));
+            Add(Path.Combine(dir, "Tools", "BodySlide"), CoreStrings.Get("L.Core_CandModTools"));
+            Add(Path.Combine(dir, "CalienteTools", "BodySlide"), CoreStrings.Get("L.Core_CandModCaliente"));
         }
 
         if (!string.IsNullOrWhiteSpace(mo2GamePath))
         {
-            Add(Path.Combine(mo2GamePath, "Data", "CalienteTools", "BodySlide"), "游戏 Data\\CalienteTools\\BodySlide");
-            Add(Path.Combine(mo2GamePath, "Data", "Tools", "BodySlide"), "游戏 Data\\Tools\\BodySlide");
+            Add(Path.Combine(mo2GamePath, "Data", "CalienteTools", "BodySlide"), CoreStrings.Get("L.Core_CandGameDataCaliente"));
+            Add(Path.Combine(mo2GamePath, "Data", "Tools", "BodySlide"), CoreStrings.Get("L.Core_CandGameDataTools"));
         }
 
         return result;
@@ -104,7 +104,7 @@ public static class BodySlideLocator
         {
             gameDataPath = Path.Combine(mo2GamePath, "Data");
             fromMo2 = true;
-            steps.Add("Config.xml 未记录 GameDataPath，改用 MO2 实例的 gamePath\\Data。");
+            steps.Add(CoreStrings.Get("L.Core_StepGameDataFromMo2"));
         }
         if (string.IsNullOrWhiteSpace(gameDataPath))
         {
@@ -112,11 +112,12 @@ public static class BodySlideLocator
             if (!string.IsNullOrWhiteSpace(reg))
             {
                 gameDataPath = Path.Combine(reg, "Data");
-                steps.Add("Config.xml 未记录 GameDataPath，改用注册表游戏路径\\Data。");
+                steps.Add(CoreStrings.Get("L.Core_StepGameDataFromRegistry"));
             }
         }
         resolution = resolution with { GameDataPath = gameDataPath, GameDataPathFromMo2 = fromMo2 };
-        steps.Add($"GameDataPath = {gameDataPath}{(fromMo2 ? "（来自 MO2）" : "")}");
+        steps.Add(CoreStrings.Format("L.Core_StepGameDataPath", gameDataPath,
+            fromMo2 ? CoreStrings.Get("L.Core_FromMo2") : ""));
 
         // 1) AppDir\SliderSets 存在且确实包含滑块组文件 → AppDir（最高优先级，与 BodySlide 一致）。
         //    注意：部分安装（FOMOD 等）会留下一个空的 SliderSets 文件夹，此时不能视为命中，
@@ -126,14 +127,14 @@ public static class BodySlideLocator
         {
             if (HasSliderSetFiles(appSliderSets))
             {
-                steps.Add($"检测到 {appDir}\\SliderSets（含滑块组文件）→ 使用 BodySlide 所在目录。");
+                steps.Add(CoreStrings.Format("L.Core_StepSliderSetsFound", appDir));
                 return resolution with { EffectivePath = appDir, Kind = ProjectPathKind.AppDir };
             }
-            steps.Add("BodySlide 目录旁的 SliderSets 存在但没有滑块组文件，忽略，继续按候选顺序检查。");
+            steps.Add(CoreStrings.Get("L.Core_StepSliderSetsEmpty"));
         }
         else
         {
-            steps.Add("BodySlide 目录旁没有 SliderSets 子目录，继续按候选顺序检查。");
+            steps.Add(CoreStrings.Get("L.Core_StepNoSliderSets"));
         }
 
         var projectPath = config.Get("ProjectPath");
@@ -149,13 +150,14 @@ public static class BodySlideLocator
         foreach (var (path, kind) in candidates)
         {
             var exists = VirtualDirectoryExists(path, gameDataPath, enabledMods);
-            steps.Add($"候选 [{kind}] {path} → {(exists ? "存在" : "不存在")}");
+            steps.Add(CoreStrings.Format("L.Core_StepCandidate", kind, path,
+                CoreStrings.Get(exists ? "L.Core_Exists" : "L.Core_NotExists")));
             if (exists)
                 return resolution with { EffectivePath = path, Kind = kind };
         }
 
         var fallback = !string.IsNullOrWhiteSpace(projectPath) ? projectPath : appDir;
-        steps.Add($"所有候选都不存在，按 BodySlide 行为回落到 {fallback}。");
+        steps.Add(CoreStrings.Format("L.Core_StepFallback", fallback));
         return resolution with { EffectivePath = fallback, Kind = ProjectPathKind.Fallback };
     }
 

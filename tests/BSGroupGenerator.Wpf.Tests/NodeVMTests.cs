@@ -76,7 +76,10 @@ public class NodeVMTests
         Assert.Equal(2, materialized.Count);
         Assert.All(materialized, o => Assert.True(o.IsChecked));
         Assert.Contains("A", isMemberCalled);
-        Assert.Equal("✔ A", materialized.First(o => o.OutfitName == "A").Text);
+        // 组内标记不再是文本前缀「✔ 」：改用树项模板里独立的勾选标记，
+        // 文本必须保持干净（否则按名字过滤、复制、对齐都会被那个前缀污染）。
+        Assert.Equal("A", materialized.First(o => o.OutfitName == "A").Text);
+        Assert.True(materialized.First(o => o.OutfitName == "A").IsMember);
     }
 
     [Fact]

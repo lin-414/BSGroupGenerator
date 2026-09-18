@@ -54,7 +54,7 @@ public partial class RulePresetsWindow : Window
         var idx = List.SelectedIndex;
         if (idx < 0 || idx >= _rows.Count)
         {
-            MessageBox.Show(this, L10n.Tr("L.RulePresets_SelectToDelete"), L10n.Tr("L.Title_Tip"), MessageBoxButton.OK, MessageBoxImage.Information);
+            Notify.Info(this, L10n.Tr("L.Title_Tip"), L10n.Tr("L.RulePresets_SelectToDelete"));
             return;
         }
         _presets.Remove(_rows[idx].Preset);

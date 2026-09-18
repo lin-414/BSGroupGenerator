@@ -1,61 +1,74 @@
 using BSGroupGenerator.Core;
+using BSGroupGenerator.Wpf.Services;
 
 namespace BSGroupGenerator.Wpf.ViewModels;
 
 public partial class MainViewModel
 {
     /// <summary>
-    /// 生成诊断报告（设置 → 诊断信息，供排查问题时复制给开发者）。
-    /// 刻意不做本地化：报告内嵌 Core 层的原始文案（BodySlideLocator 的解析步骤、SliderSetScanner 的
-    /// 覆盖层说明与警告），而 Core 不依赖 UI 层、无法取词；只把外层标题译成英文会变成中英混排，反而更难读。
+    /// 生成诊断报告（工具 → 诊断信息，供排查问题时复制给开发者）。
+    /// <para>
+    /// 文案走 L10n，包括内嵌的 Core 层步骤说明（Core 经 CoreStrings.Localizer 取词）——
+    /// 早先这里刻意不本地化，理由是"只译外层标题会变成中英混排"，代价却是英文/俄语界面下
+    /// 整份报告都是中文，用户根本读不了。现在内外同源，混排问题自然消失。
+    /// </para>
+    /// <para>
+    /// 像 <c>mods:</c> / <c>gameName:</c> / <c>Kind:</c> 这类本来就是英文的技术标签保持字面量，
+    /// 不必为翻译而翻译；需要本地化的只是其中的中文措辞与「存在/不存在」这类状态词。
+    /// </para>
     /// </summary>
     public string BuildDiagnostics()
     {
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("=== MO2 实例 ===");
+        sb.AppendLine(L10n.Tr("L.Diag_SecInstances"));
         foreach (var instance in Instances)
         {
             sb.AppendLine($"[{instance.DisplayName}]");
-            sb.AppendLine($"  实例目录: {instance.InstanceDir}");
-            sb.AppendLine($"  mods:     {instance.ModsDirectory} ({(Directory.Exists(instance.ModsDirectory) ? "存在" : "不存在")})");
+            sb.AppendLine(L10n.TrF("L.Diag_InstanceDir", instance.InstanceDir));
+            sb.AppendLine($"  mods:     {instance.ModsDirectory} " +
+                          $"({L10n.Tr(Directory.Exists(instance.ModsDirectory) ? "L.Core_Exists" : "L.Core_NotExists")})");
             sb.AppendLine($"  profiles: {instance.ProfilesDirectory}");
             sb.AppendLine($"  gameName: {instance.GameName}");
             sb.AppendLine($"  gamePath: {instance.GamePath}");
         }
         if (Instances.Count == 0)
-            sb.AppendLine("（无）");
+            sb.AppendLine(L10n.Tr("L.Diag_None"));
 
         sb.AppendLine();
-        sb.AppendLine("=== 当前 Profile ===");
-        sb.AppendLine($"{SelectedProfile ?? "（无）"} — 启用模组 {Mods.Count} 个");
+        sb.AppendLine(L10n.Tr("L.Diag_SecProfile"));
+        sb.AppendLine(L10n.TrF("L.Diag_ProfileLine", SelectedProfile ?? L10n.Tr("L.Diag_None"), Mods.Count));
         foreach (var (entry, dir) in Mods.Take(200))
-            sb.AppendLine($"  #{entry.Priority} {entry.Name} → {(Directory.Exists(dir) ? "存在" : "缺失")}");
+            sb.AppendLine($"  #{entry.Priority} {entry.Name} → " +
+                          L10n.Tr(Directory.Exists(dir) ? "L.Core_Exists" : "L.Diag_ModDirMissing"));
 
         sb.AppendLine();
-        sb.AppendLine("=== BodySlide ===");
-        sb.AppendLine($"目录: {_bsAppDir ?? "（未选择）"}");
+        sb.AppendLine(L10n.Tr("L.Diag_SecBodySlide"));
+        sb.AppendLine(L10n.TrF("L.Diag_BsDir", _bsAppDir ?? L10n.Tr("L.Diag_NotSelected")));
         if (Resolution is not null)
         {
             sb.AppendLine($"Kind: {Resolution.Kind}");
-            sb.AppendLine($"有效项目路径: {Resolution.EffectivePath}");
-            sb.AppendLine($"GameDataPath: {Resolution.GameDataPath}（来自 MO2: {Resolution.GameDataPathFromMo2}）");
-            sb.AppendLine("解析步骤:");
+            sb.AppendLine(L10n.TrF("L.Diag_EffectivePath", Resolution.EffectivePath));
+            sb.AppendLine(L10n.TrF("L.Diag_GameDataPath", Resolution.GameDataPath,
+                L10n.Tr(Resolution.GameDataPathFromMo2 ? "L.Btn_Yes" : "L.Btn_No")));
+            sb.AppendLine(L10n.Tr("L.Diag_Steps"));
             foreach (var step in Resolution.Steps)
                 sb.AppendLine($"  - {step}");
         }
 
         sb.AppendLine();
-        sb.AppendLine("=== 扫描结果 ===");
+        sb.AppendLine(L10n.Tr("L.Diag_SecScan"));
         if (Scan is null)
         {
-            sb.AppendLine("（未扫描）");
+            sb.AppendLine(L10n.Tr("L.Diag_NotScanned"));
         }
         else
         {
             foreach (var note in Scan.LayerNotes)
                 sb.AppendLine(note);
-            sb.AppendLine($"服装总数: {Scan.Outfits.Count}（同名冲突 {Scan.Outfits.Count(o => o.HasConflict)}）");
-            sb.AppendLine($"输出目录: {ResolveWriteTarget()?.Dir ?? "（未定）"}");
+            sb.AppendLine(L10n.TrF("L.Diag_OutfitCount", Scan.Outfits.Count,
+                Scan.Outfits.Count(o => o.HasConflict)));
+            sb.AppendLine(L10n.TrF("L.Diag_OutputDir",
+                ResolveWriteTarget()?.Dir ?? L10n.Tr("L.Diag_OutputUndetermined")));
         }
         return sb.ToString();
     }

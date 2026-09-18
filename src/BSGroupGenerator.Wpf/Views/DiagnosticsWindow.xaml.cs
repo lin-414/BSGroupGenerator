@@ -17,7 +17,6 @@ public partial class DiagnosticsWindow : Window
     private void Copy_Click(object sender, RoutedEventArgs e)
     {
         Clipboard.SetText(ReportBox.Text);
-        MessageBox.Show(this, L10n.Tr("L.Msg_CopiedToClipboard"), L10n.Tr("L.Diag_Title"),
-            MessageBoxButton.OK, MessageBoxImage.Information);
+        Notify.Info(this, L10n.Tr("L.Diag_Title"), L10n.Tr("L.Msg_CopiedToClipboard"));
     }
 }

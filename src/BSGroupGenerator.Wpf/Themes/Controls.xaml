@@ -3,18 +3,34 @@
                     xmlns:ui="clr-namespace:BSGroupGenerator.Wpf.Services">
 
     <!-- ── 控件样式（主题无关层：颜色一律 DynamicResource 引用 B.* 键，由 Palette.Light/Palette.Boutique 提供，
-         运行时替换色板字典即可全窗口热切换）── -->
+         运行时替换色板字典即可全窗口热切换）──
+         改色值后跑 python tools/verify_contrast.py 断言对比度（CI 门禁）。 -->
 
-    <FontFamily x:Key="AppFont">Microsoft YaHei UI</FontFamily>
-    <FontFamily x:Key="MonoFont">Consolas</FontFamily>
+    <!-- 字体按逗号回退：WPF 逐字形回落，拉丁/西里尔走 Segoe UI（系统 UI 字体），
+         汉字再落到雅黑。只写雅黑时英语/俄语的拉丁字形明显不如系统字体。 -->
+    <FontFamily x:Key="AppFont">Segoe UI, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="MonoFont">Consolas, Cascadia Mono</FontFamily>
 
-    <!-- ── 窗口默认：前景色必须走样式，否则暗色主题下继承系统黑字不可读 ── -->
-    <Style TargetType="Window">
+    <!-- ── 窗口默认：前景色必须走样式，否则暗色主题下继承系统黑字不可读 ──
+         渲染选项放在这里而不是逐个窗口声明：只有主窗口设过 TextFormattingMode/UseLayoutRounding 时，
+         其余 9 个窗口在 125% DPI 下文字清晰度与像素对齐会与主窗口不一致。
+
+         ⚠️ 隐式样式按元素**确切类型**匹配：TargetType="Window" 的隐式样式不会作用到 x:Class 生成的
+         MainWindow 与各对话框——它们是 Window 的派生类，实测拿到的仍是系统默认值（白底、12pt、
+         继承黑字）。所以样式要起键名，各窗口根元素显式写 Style="{StaticResource AppWindow}"。
+         下面那份隐式样式只服务直接 new Window() 的场合，别指望它覆盖派生窗口。 -->
+    <Style x:Key="AppWindow" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource B.Window}" />
         <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
         <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
         <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
     </Style>
+
+    <!-- 隐式那一份：只对确切的 Window 实例生效（原因见上） -->
+    <Style TargetType="Window" BasedOn="{StaticResource AppWindow}" />
 
     <!-- ── 基础按钮 ── -->
     <Style TargetType="Button">
@@ -24,6 +40,9 @@
         <Setter Property="Padding" Value="12,5" />
         <Setter Property="MinHeight" Value="28" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
+        <!-- 容器被压窄时用省略号显式收尾，并让悬停能看到全文：
+             否则文字会被整段裁掉，用户无从知道那里还有内容 -->
+        <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -31,12 +50,21 @@
                             BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
                             CornerRadius="4" Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          RecognizesAccessKey="True" />
+                                          RecognizesAccessKey="True">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="AccessText">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource B.Hover}" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.AccentBorder}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource B.Selected}" />
@@ -50,7 +78,8 @@
         </Setter>
     </Style>
 
-    <!-- 主按钮（实心） -->
+    <!-- 主按钮（实心）。前景固定 White：色板里的 Accent / AccentHover / Warn 都按"压白字 ≥ 4.5:1"选值，
+         换底色（如未保存态改用 B.Warn）时不必改模板。 -->
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Background" Value="{DynamicResource B.Accent}" />
         <Setter Property="Foreground" Value="White" />
@@ -61,7 +90,16 @@
                     <Border x:Name="bd" Background="{TemplateBinding Background}"
                             BorderBrush="Transparent" BorderThickness="1"
                             CornerRadius="4" Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="AccessText">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -79,6 +117,26 @@
         </Setter>
     </Style>
 
+    <!-- 危险按钮（描边式）：危险文字/描边压卡片底，用 B.Danger（≥ 4.5:1）。
+         不用实心红底是因为实心要配白字，得另取更暗的一档（B.DangerSolid，留给确认框的主按钮）。 -->
+    <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Foreground" Value="{DynamicResource B.Danger}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource B.Danger}" />
+    </Style>
+
+    <!-- 实心危险按钮（确认框里执行删除的那颗） -->
+    <Style x:Key="DangerSolidButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="Background" Value="{DynamicResource B.DangerSolid}" />
+    </Style>
+
+    <!-- 工具条里的图标按钮（「⋯」等）：方、无内边距，避免撑宽按钮行 -->
+    <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
     <!-- ── 输入框（支持 ui:Watermark.Text 占位提示） ── -->
     <Style TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource B.Card}" />
@@ -86,7 +144,8 @@
         <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
         <Setter Property="CaretBrush" Value="{DynamicResource B.Text}" />
         <Setter Property="Padding" Value="6,4" />
-        <Setter Property="SelectionBrush" Value="{DynamicResource B.Accent}" />
+        <!-- 选区底色用 AccentSoft 而非 Accent：Accent 压正文只有 3.7:1，选中后反而看不清字 -->
+        <Setter Property="SelectionBrush" Value="{DynamicResource B.AccentSoft}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -97,12 +156,13 @@
                             <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(ui:Watermark.Text)}"
                                        Foreground="{DynamicResource B.TextDim}" IsHitTestVisible="False"
-                                       VerticalAlignment="Center" Visibility="Collapsed" x:Name="wm" />
+                                       VerticalAlignment="Center" Visibility="Collapsed" x:Name="wm"
+                                       TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.AccentBorder}" />
                         </Trigger>
                         <Trigger Property="Text" Value="">
                             <Setter TargetName="wm" Property="Visibility" Value="Visible" />
@@ -116,7 +176,10 @@
         </Setter>
     </Style>
 
-    <!-- ── 复选框：勾选态 = 柔和绿底 + 主题勾线（仿 boutique） ── -->
+    <!-- ── 复选框：勾选态 = 柔和绿底 + 主题勾线（仿 boutique） ──
+         未勾选态的边框是本工具唯一的输入入口，必须自己够亮：
+         复用 B.Border 时暗色只有 1.32:1、亮色 1.24:1，树看起来像只读列表。
+         改用专用的 B.CheckBorder（暗 3.89:1 / 亮 3.76:1）并加粗到 1.5px。 -->
     <Style TargetType="CheckBox">
         <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -126,7 +189,7 @@
                     <StackPanel Orientation="Horizontal" Background="Transparent">
                         <Border x:Name="bd" Width="16" Height="16" CornerRadius="3"
                                 Background="{DynamicResource B.Card}"
-                                BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
+                                BorderBrush="{DynamicResource B.CheckBorder}" BorderThickness="1.5"
                                 VerticalAlignment="Center">
                             <Grid>
                                 <Path x:Name="chk" Data="M 1.5 5 L 5 8.5 L 10.5 1.5"
@@ -141,24 +204,51 @@
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Grid>
                         </Border>
+                        <!-- 与 Button 模板同样的处理：勾选框标签过长时给省略号而不是硬裁。
+                             RecognizesAccessKey=True 时生成的是 AccessText，所以两个都要设。 -->
                         <ContentPresenter Margin="6,0,0,0" VerticalAlignment="Center"
-                                          RecognizesAccessKey="True" />
+                                          RecognizesAccessKey="True">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="AccessText">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
                     </StackPanel>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="chk" Property="Visibility" Value="Visible" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.AccentBorder}" />
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource B.AccentSoft}" />
                         </Trigger>
                         <!-- 半选（容器下部分子节点勾选） -->
                         <Trigger Property="IsChecked" Value="{x:Null}">
                             <Setter TargetName="ind" Property="Visibility" Value="Visible" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.AccentBorder}" />
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource B.AccentSoft}" />
                         </Trigger>
+                        <!-- 悬停：只对未勾选态提亮边框并加底纹，让人一眼看出"这里可以点"。
+                             勾选态不参与，否则会和已勾选的观感打架。 -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.AccentBorder}" />
                         </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsChecked" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource B.Hover}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsChecked" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource B.Hover}" />
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -173,6 +263,7 @@
         <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     </Style>
 
     <Style TargetType="TreeViewItem">
@@ -189,11 +280,12 @@
                             </Border.InputBindings>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="18" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
+                                <!-- 18×18 而非 14×14：展开箭头是树里最常点的目标，14 太小 -->
                                 <ToggleButton x:Name="exp" Focusable="False" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                              ClickMode="Press" Width="14" Height="14"
+                                              ClickMode="Press" Width="18" Height="18"
                                               HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <ToggleButton.Template>
                                         <ControlTemplate TargetType="ToggleButton">
@@ -222,7 +314,7 @@
                                 <ContentPresenter x:Name="header" Grid.Column="1" ContentSource="Header" />
                             </Grid>
                         </Border>
-                        <ItemsPresenter x:Name="items" Margin="16,0,0,0" />
+                        <ItemsPresenter x:Name="items" Margin="18,0,0,0" />
                     </StackPanel>
                     <ControlTemplate.Triggers>
                         <Trigger Property="HasItems" Value="False">
@@ -250,11 +342,31 @@
         </Setter>
     </Style>
 
+    <!-- ── 左侧模组列表（主窗口）的右键菜单：整棵树的展开/折叠 ──
+         单独起键名、不并进上面的隐式 TreeViewItem 样式：弹窗里的预览树（新装模组 / 组成员 /
+         规则预览）用的也是同一套节点类型，但那些树没给节点挂 Roots（拿不到整棵树），菜单过去
+         只会「全部展开」成只展开一棵子树；顺带也保证右键菜单只出现在左侧列表上。
+
+         ContextMenu 是样式 Setter 里共享的一份实例，不在逻辑树上、继承不到 DataContext，
+         所以显式绑 PlacementTarget（= 被右键的那个 TreeViewItem）的 DataContext，即该行的节点。
+         三个命令因此都落在 NodeVM 上（见 TreeNodes.cs），由 XamlCommandBindingTests 对照。 -->
+    <ContextMenu x:Key="NodeTreeContextMenu"
+                 DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+        <MenuItem Header="{DynamicResource L.Tree_ExpandAll}" Command="{Binding ExpandAllCommand}" />
+        <MenuItem Header="{DynamicResource L.Tree_CollapseAll}" Command="{Binding CollapseAllCommand}" />
+        <MenuItem Header="{DynamicResource L.Tree_CollapseOthers}" Command="{Binding CollapseOthersCommand}" />
+    </ContextMenu>
+
+    <Style x:Key="NodeTreeItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+        <Setter Property="ContextMenu" Value="{StaticResource NodeTreeContextMenu}" />
+    </Style>
+
     <!-- ── 列表 ── -->
     <Style TargetType="ListBox">
         <Setter Property="Background" Value="{DynamicResource B.Card}" />
         <Setter Property="BorderBrush" Value="{DynamicResource B.Border}" />
         <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     </Style>
 
     <Style TargetType="ListBoxItem">
@@ -305,10 +417,10 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.AccentBorder}" />
             </Trigger>
             <Trigger Property="IsChecked" Value="True">
-                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource B.AccentBorder}" />
                 <Setter TargetName="arrow" Property="RenderTransform">
                     <Setter.Value>
                         <RotateTransform Angle="180" />
@@ -447,8 +559,11 @@
                         <Trigger Property="Role" Value="SubmenuItem">
                             <Setter TargetName="gesture" Property="Visibility" Value="Visible" />
                         </Trigger>
+                        <!-- 子菜单头向右展开：固定 Bottom 时三级菜单会盖住同级项 -->
                         <Trigger Property="Role" Value="SubmenuHeader">
                             <Setter TargetName="arrow" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="PART_Popup" Property="Placement" Value="Right" />
+                            <Setter TargetName="PART_Popup" Property="VerticalOffset" Value="-6" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="chk" Property="Visibility" Value="Visible" />
@@ -478,12 +593,18 @@
         </Setter>
     </Style>
 
+    <!-- 危险菜单项（删除组等）：文字走 B.Danger，和普通项区分开 -->
+    <Style x:Key="DangerMenuItem" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+        <Setter Property="Foreground" Value="{DynamicResource B.Danger}" />
+    </Style>
+
     <!-- ── 提示框 ── -->
     <Style TargetType="ToolTip">
         <Setter Property="Background" Value="{DynamicResource B.Card}" />
         <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
         <Setter Property="BorderBrush" Value="{DynamicResource B.Border}" />
         <Setter Property="Padding" Value="8,5" />
+        <Setter Property="MaxWidth" Value="560" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
@@ -587,8 +708,97 @@
         </Style.Triggers>
     </Style>
 
+    <!-- ── 右键菜单：弹层必须自绘，否则暗色主题下会弹出一个系统白框 ── -->
+    <Style TargetType="ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource B.Card}" />
+        <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource B.Border}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
+                            CornerRadius="6" Padding="4" MinWidth="180">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.35" />
+                        </Border.Effect>
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 日志区高度拖拽条：比 GridSplitter 好使 —— GridSplitter 会直接改写 RowDefinition.Height，
+         把 VM 上的高度绑定冲掉；自己处理 DragDelta 才能让高度留在 ViewModel 里。 -->
+    <Style x:Key="GripThumb" TargetType="Thumb">
+        <Setter Property="Height" Value="7" />
+        <Setter Property="Cursor" Value="SizeNS" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border Background="Transparent">
+                        <Border x:Name="bar" Width="40" Height="3" CornerRadius="2"
+                                Background="{DynamicResource B.Border}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bar" Property="Background" Value="{DynamicResource B.AccentBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="bar" Property="Background" Value="{DynamicResource B.AccentBorder}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ── 标签 ── -->
     <Style x:Key="DimLabel" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource B.TextDim}" />
+    </Style>
+
+    <!-- 面板小节标题：替代原来直接写 B.Navy 的做法（暗色下 Navy 与 Text 同值，是多余的色板键） -->
+    <Style x:Key="SectionHeader" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- 空状态：树/列表为空时给一句话，别留一片空白让人以为是卡住了。
+         居中文本必须显式换行，否则按内容宽排布会同时向两侧溢出。 -->
+    <Style x:Key="EmptyStateText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource B.TextDim}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="18,10" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <!-- 计数徽标（搬运按钮上的勾选数量） -->
+    <Style x:Key="CountBadge" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource B.WarnSoft}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource B.WarnText}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="MinWidth" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="CountBadgeText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource B.WarnText}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 </ResourceDictionary>

@@ -109,4 +109,64 @@ public class GroupStoreTests
         Assert.Equal(2, applied);
         Assert.Equal(new[] { "A", "B" }, store.GetGroup("UBE")!.Members);
     }
+
+    /// <summary>界面侧就地改成员（如成员预览里移除）后，IsInAnyGroup 必须看到新状态：
+    /// 成员缓存不失效时，"刚移除的服装"会被一直答复为"仍在组内"。</summary>
+    [Fact]
+    public void MarkDirtyFromUiInvalidatesMembershipCache()
+    {
+        var store = new GroupStore();
+        store.NewGroup("UBE");
+        store.ApplyToCurrent(new[] { "A", "B" }, add: true);
+
+        // 先问一次，把成员缓存建起来（不建缓存的话本用例测不到这个缺陷）
+        Assert.True(store.IsInAnyGroup("A"));
+        Assert.True(store.IsInAnyGroup("B"));
+
+        store.Current!.Members.RemoveAll(m => m == "A");
+        store.MarkDirtyFromUi();
+
+        Assert.False(store.IsInAnyGroup("A"));
+        Assert.True(store.IsInAnyGroup("B"));
+    }
+
+    /// <summary>组名大小写不同的选中名也要能定位到组：CurrentGroupName 可能来自外部/界面输入。</summary>
+    [Fact]
+    public void CurrentMatchesGroupNameIgnoringCase()
+    {
+        var store = new GroupStore();
+        store.NewGroup("UBE");
+
+        store.SelectGroup("ube");
+
+        Assert.NotNull(store.Current);
+        Assert.Same(store.GetGroup("UBE"), store.Current);
+    }
+
+    /// <summary>一次重命名只占一步撤销（ViewModel 侧不再额外压快照）：撤销到"改名之前"之后就没了。
+    /// 多压一次快照时，第二次 Undo 会返回成功却什么都没变——用户看到的是"撤销点了没反应"。</summary>
+    [Fact]
+    public void RenameIsExactlyOneUndoStep()
+    {
+        var store = new GroupStore();
+        store.Load(new List<SliderGroup> { new("Old", new[] { "A" }) });
+
+        store.RenameGroup("Old", "New");
+
+        Assert.True(store.Undo().Ok);                    // 第一次：回到 Old
+        Assert.Equal("Old", store.GetGroup("Old")!.Name);
+        Assert.False(store.Undo().Ok);                   // 第二次：撤销栈已空
+        Assert.False(store.CanUndo);
+    }
+
+    /// <summary>导入一次也只占一步撤销。</summary>
+    [Fact]
+    public void ImportIsExactlyOneUndoStepPerCall()
+    {
+        var store = new GroupStore(); // 全新的 store，撤销栈本来就是空的
+        store.Import(new[] { new SliderGroup("A", new[] { "x" }) });
+
+        Assert.True(store.Undo().Ok);
+        Assert.False(store.Undo().Ok);
+    }
 }

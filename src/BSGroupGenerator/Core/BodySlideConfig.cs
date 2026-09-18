@@ -31,7 +31,7 @@ public class BodySlideConfig
         var doc = XDocument.Load(ConfigPath, LoadOptions.None);
         var root = doc.Root;
         if (root is null || root.Name.LocalName != "Config")
-            throw new InvalidDataException("不是有效的 BodySlide Config.xml（缺少 <Config> 根元素）");
+            throw new InvalidDataException(CoreStrings.Get("L.Core_ConfigRootMissing"));
 
         foreach (var element in root.Elements())
         {

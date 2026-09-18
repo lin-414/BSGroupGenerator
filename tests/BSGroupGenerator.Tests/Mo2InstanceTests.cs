@@ -49,6 +49,32 @@ public class Mo2InstanceTests
     }
 
     [Fact]
+    public void RelativeConfiguredPathsResolveAgainstInstanceDir()
+    {
+        // 配置里写相对路径（MO2 便携模式的写法）：必须相对实例目录解析，
+        // 按当前工作目录解析的话结果会随"从哪个目录启动程序"而变
+        var instance = Create("[Settings]\nmod_directory=mods\nprofiles_directory=myp\\profiles\n", out var temp);
+        var instanceDir = instance.InstanceDir;
+
+        Assert.Equal(System.IO.Path.Combine(instanceDir, "mods"), instance.ModsDirectory);
+        Assert.Equal(System.IO.Path.Combine(instanceDir, "myp\\profiles"), instance.ProfilesDirectory);
+        temp.Dispose();
+    }
+
+    [Fact]
+    public void RelativeBaseDirectoryResolvesAgainstInstanceDir()
+    {
+        // base_directory 自己写相对路径时同样必须相对实例目录解析（与 mod/profiles 同一规则）：
+        // 按当前工作目录解析会让"基准目录"随启动位置漂移，连带 mod/profiles 一起错位
+        var instance = Create("[Settings]\nbase_directory=mo2data\nmod_directory=mods\n", out var temp);
+        var instanceDir = instance.InstanceDir;
+        temp.Dispose();
+
+        Assert.Equal(System.IO.Path.Combine(instanceDir, "mo2data"), instance.BaseDirectory);
+        Assert.Equal(System.IO.Path.Combine(instanceDir, "mo2data", "mods"), instance.ModsDirectory);
+    }
+
+    [Fact]
     public void GetProfilesReturnsFoldersWithModlist()
     {
         using var temp = new TempDir();

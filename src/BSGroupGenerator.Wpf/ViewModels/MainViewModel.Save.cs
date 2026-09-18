@@ -82,6 +82,7 @@ public partial class MainViewModel
         var target = ResolveWriteTarget();
         _lastTarget = target;
         OutputText = target is null ? L10n.Tr("L.Vm_OutputUndetermined") : L10n.TrF("L.Vm_OutputIs", target.Value.Description);
+        OnPropertyChanged(nameof(OutputToolTip));
         if (target is not null)
             Log(L10n.TrF("L.Log_OutputDir", target.Value.Dir, target.Value.Description));
     }
@@ -167,7 +168,7 @@ public partial class MainViewModel
                     // 校验不通过就跳过并记日志——最坏结果是留下一个陈旧分组文件，代价远低于误删用户文件。
                     if (!SliderGroupFile.IsBareFileName(old))
                     {
-                        Log(L10n.TrF("L.Log_ManifestEntrySkipped", old));
+                        LogWarning(L10n.TrF("L.Log_ManifestEntrySkipped", old));
                         continue;
                     }
                     try
@@ -192,7 +193,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            Log(L10n.TrF("L.Log_WriteFail", ex.Message));
+            LogError(L10n.TrF("L.Log_WriteFail", ex.Message));
             NotifyUser(L10n.Tr("L.Title_Error"), L10n.TrF("L.Msg_WriteFail", ex.Message), warning: true);
             return false;
         }
@@ -385,6 +386,10 @@ public partial class MainViewModel
 
     public Func<string, string, bool?>? ConfirmHandler { get; set; } // 视图注入：确认框，true=确认
 
+    /// <summary>视图注入：带「不再提示」记忆的确认框 (title, message, suppressKey) => 是否确认。
+    /// 未注入时退回普通 ConfirmHandler（单测、无视图场景）。</summary>
+    public Func<string, string, string, bool>? SuppressibleConfirmHandler { get; set; }
+
     // ── 添加 MO2 目录 / BodySlide 浏览 ──
     public void AddMo2Directory(string path)
     {
@@ -421,6 +426,9 @@ public partial class MainViewModel
     public void OpenImportDialog() => _ = FilePicker?.Invoke(L10n.Tr("L.Pick_ImportGroups"));
 
     // ── 更新检查 ──
+    /// <summary>「发现新版本」提示的「不再提示」记忆键（存于 AppSettings.SuppressedPrompts）。</summary>
+    private const string SuppressKeyUpdate = "update-available";
+
     public async Task CheckForUpdatesAsync(bool reportUpToDate)
     {
         const string releasesUrl = "https://github.com/lin-414/BSGroupGenerator/releases/latest";
@@ -439,9 +447,12 @@ public partial class MainViewModel
                     NotifyUser(L10n.Tr("L.Title_CheckUpdate"), L10n.TrF("L.Msg_UpToDate", current));
                 return;
             }
-            var go = ConfirmHandler?.Invoke(L10n.Tr("L.Title_CheckUpdate"),
-                L10n.TrF("L.Msg_UpdateAvailable", tag, current));
-            if (go == true)
+            var go = SuppressibleConfirmHandler is not null
+                ? SuppressibleConfirmHandler(L10n.Tr("L.Title_CheckUpdate"),
+                    L10n.TrF("L.Msg_UpdateAvailable", tag, current), SuppressKeyUpdate)
+                : ConfirmHandler?.Invoke(L10n.Tr("L.Title_CheckUpdate"),
+                    L10n.TrF("L.Msg_UpdateAvailable", tag, current)) == true;
+            if (go)
                 OpenUrl(releasesUrl);
         }
         catch (Exception ex)

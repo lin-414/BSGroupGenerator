@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Threading;
 using BSGroupGenerator.Wpf.Services;
 using BSGroupGenerator.Wpf.ViewModels;
 using Microsoft.Win32;
@@ -19,27 +21,32 @@ public partial class MainWindow : Window
         _vm = new MainViewModel();
         DataContext = _vm;
 
+        // 视图注入：所有提示/确认都走自绘的 Notify，不再用系统 MessageBox
+        //（后者在暗色主题下弹白框、图标是 Vista 位图、按钮语言跟随操作系统）
         _vm.NotifyHandler = (title, message, warning) =>
         {
-            MessageBox.Show(this, message, title, MessageBoxButton.OK,
-                warning ? MessageBoxImage.Warning : MessageBoxImage.Information);
+            Notify.Show(this, title, message, warning ? NotifyKind.Warning : NotifyKind.Info);
             return false;
         };
-        _vm.ConfirmHandler = (title, message) =>
-            MessageBox.Show(this, message, title, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
+        _vm.ConfirmHandler = (title, message) => Notify.Confirm(this, title, message);
+        _vm.SuppressibleConfirmHandler = (title, message, suppressKey) =>
+            Notify.Show(this, title, message, NotifyKind.Question, NotifyButtons.OkCancel,
+                settings: _vm.Settings, suppressKey: suppressKey) == NotifyResult.Primary;
         _vm.FolderPicker = description => PickFolder(description);
         _vm.FilePicker = _ => PickImportFile();
         _vm.NewModsDetected += request => Dispatcher.Invoke(() => ShowNewMods(request));
         _vm.SaveCompleted += (dir, bsAppDir) => Dispatcher.Invoke(() => ShowSaveSuccess(dir, bsAppDir));
-        // 更新提示不在这里订阅：CheckForUpdatesAsync 内部用 ConfirmHandler 弹确认框并打开下载页
+        // 更新提示不在这里订阅：CheckForUpdatesAsync 内部用 SuppressibleConfirmHandler 弹确认框并打开下载页
 
-        _vm.PropertyChanged += (_, e) =>
+        // 日志列表是虚拟化的 ListBox，新行只在展开时才需要滚到底
+        _vm.LogFlushed += () =>
         {
-            if (e.PropertyName == nameof(MainViewModel.LogText))
-                LogBox.ScrollToEnd();
+            if (_vm.IsLogExpanded && _vm.LogLines.Count > 0)
+                LogList.ScrollIntoView(_vm.LogLines[^1]);
         };
 
         HookDragDrop();
+        HookTreeRowSelection();
         SyncThemeChecks();
         SyncLangChecks();
         Loaded += (_, _) => _ = _vm.CheckForUpdatesAsync(reportUpToDate: false);
@@ -52,6 +59,12 @@ public partial class MainWindow : Window
             }
         };
     }
+
+    /// <summary>右键点在某一行上时把那一行也选中——右键菜单就是在这一行上弹的，
+    /// 用户预期它同时被选中。实现放在视图侧，理由见 TreeSelection。</summary>
+    private void HookTreeRowSelection() =>
+        OutfitTree.ContextMenuOpening += (_, e) =>
+            TreeSelection.SelectRow(e.OriginalSource as DependencyObject, OutfitTree);
 
     /// <summary>把分组 XML 拖到窗口任意位置即可导入（等价于「导入现有组文件…」）。</summary>
     private void HookDragDrop()
@@ -92,6 +105,8 @@ public partial class MainWindow : Window
     {
         MiLangZh.IsChecked = L10n.Current == L10n.Zh;
         MiLangEn.IsChecked = L10n.Current == L10n.En;
+        MiLangRu.IsChecked = L10n.Current == L10n.Ru;
+        MiLangFr.IsChecked = L10n.Current == L10n.Fr;
     }
 
     private void Lang_Click(object sender, RoutedEventArgs e)
@@ -173,6 +188,16 @@ public partial class MainWindow : Window
             _vm.ImportFiles([file]);
     }
 
+    // ── 组管理（右侧「⋯」与组列表右键菜单共用同一份菜单）────────────────
+    private void GroupMenu_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || GroupList.ContextMenu is not { } menu)
+            return;
+        menu.PlacementTarget = button;
+        menu.Placement = PlacementMode.Bottom;
+        menu.IsOpen = true;
+    }
+
     private void NewGroup_Click(object sender, RoutedEventArgs e)
     {
         var name = InputWindow.Show(this, L10n.Tr("L.Title_NewGroup"), L10n.Tr("L.Prompt_GroupName"));
@@ -195,8 +220,8 @@ public partial class MainWindow : Window
         var group = _vm.Store.Current;
         if (group is null)
             return;
-        if (MessageBox.Show(this, L10n.TrF("L.Msg_ConfirmDeleteGroup", group.Name, group.Members.Count),
-                L10n.Tr("L.Title_Confirm"), MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+        if (Notify.Confirm(this, L10n.Tr("L.Title_Confirm"),
+                L10n.TrF("L.Msg_ConfirmDeleteGroup", group.Name, group.Members.Count), destructive: true))
             _vm.DeleteGroupCommand.Execute(null);
     }
 
@@ -205,8 +230,7 @@ public partial class MainWindow : Window
         var group = _vm.Store.Current;
         if (group is null)
         {
-            MessageBox.Show(this, L10n.Tr("L.Msg_SelectGroupFirst"), L10n.Tr("L.Title_Tip"),
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Notify.Info(this, L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_SelectGroupFirst"));
             return;
         }
         new GroupMembersWindow(group, _vm.GetTreeDisplayStructure(),
@@ -243,14 +267,12 @@ public partial class MainWindow : Window
         }
         if (_vm.Store.Count == 0)
         {
-            MessageBox.Show(this, L10n.Tr("L.Msg_NeedGroupFirst"), L10n.Tr("L.Title_Tip"),
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Notify.Info(this, L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_NeedGroupFirst"));
             return;
         }
         if (_vm.Scan is null || _vm.Scan.Outfits.Count == 0)
         {
-            MessageBox.Show(this, L10n.Tr("L.Msg_NoOutfits"), L10n.Tr("L.Title_Tip"),
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Notify.Info(this, L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_NoOutfits"));
             return;
         }
         var ownerMap = _vm.OwnerByOutfit();
@@ -284,24 +306,47 @@ public partial class MainWindow : Window
     {
         var dir = _vm.ResolveOutputDirectory();
         if (dir is null)
-            MessageBox.Show(this, L10n.Tr("L.Msg_OutputDirUndetermined"), L10n.Tr("L.Title_Tip"));
+            Notify.Info(this, L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_OutputDirUndetermined"));
         else
             MainViewModel.OpenDirectory(dir);
     }
+
+    // ── 日志区（默认折叠成一行摘要）────────────────────────────────────
+    private void LogToggle_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.IsLogExpanded = !_vm.IsLogExpanded;
+        if (!_vm.IsLogExpanded || _vm.LogLines.Count == 0)
+            return;
+        // 等展开后的列表完成布局再滚，否则虚拟化面板还没有可视项
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded,
+            new Action(() => LogList.ScrollIntoView(_vm.LogLines[^1])));
+    }
+
+    private void LogCopy_Click(object sender, RoutedEventArgs e)
+    {
+        Clipboard.SetText(_vm.LogTextAll);
+        Notify.Info(this, L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_CopiedToClipboard"));
+    }
+
+    private void LogClear_Click(object sender, RoutedEventArgs e) => _vm.ClearLog();
+
+    /// <summary>拖拽条在日志上方，向下拖 = 让日志变矮。</summary>
+    private void LogResizeThumb_DragDelta(object sender, DragDeltaEventArgs e) =>
+        _vm.LogPanelHeight = Math.Clamp(_vm.LogPanelHeight - e.VerticalChange, 80, 600);
 
     protected override void OnClosing(CancelEventArgs e)
     {
         if (_vm.Store.Dirty)
         {
-            var choice = MessageBox.Show(this,
-                L10n.Tr("L.Msg_UnsavedOnExit"),
-                L10n.Tr("L.Title_UnsavedChanges"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-            if (choice == MessageBoxResult.Cancel)
+            // 三分支（保存并退出 / 不保存退出 / 留下）需要三值结果，不能压成"确定/取消"
+            var choice = Notify.Show(this, L10n.Tr("L.Title_UnsavedChanges"), L10n.Tr("L.Msg_UnsavedOnExit"),
+                NotifyKind.Warning, NotifyButtons.YesNoCancel);
+            if (choice == NotifyResult.Cancel)
             {
                 e.Cancel = true;
                 return;
             }
-            if (choice == MessageBoxResult.Yes && !_vm.TrySaveGroups(showSuccessDialog: false))
+            if (choice == NotifyResult.Primary && !_vm.TrySaveGroups(showSuccessDialog: false))
             {
                 e.Cancel = true;
                 return;

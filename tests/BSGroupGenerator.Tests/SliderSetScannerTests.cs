@@ -50,7 +50,10 @@ public class SliderSetScannerTests
         Assert.Equal("ArmorPackA", shared.OwnerLabel);
 
         var data = result.Outfits.First(o => o.Name == "DataOutfit");
-        Assert.Equal("游戏Data（本体）", data.OwnerLabel);
+        // 自 i18n 改造起，Core 只负责产出本地化键，措辞在 Lang.*.xaml 里；
+        // 这里断言键而不是中文：文案改词不该弄红 Core 的测试，而"基础游戏 Data 层被
+        // 单列为一层"这件事由键本身钉住。
+        Assert.Equal("L.Core_LayerGameData", data.OwnerLabel);
     }
 
     [Fact]
@@ -114,7 +117,8 @@ public class SliderSetScannerTests
         var result = SliderSetScanner.Scan(VirtualResolution(gameData, @"CalienteTools\BodySlide"), mods);
 
         Assert.Contains(result.Outfits, o => o.Name == "OspOutfit");
-        Assert.Contains(result.Warnings, w => w.Contains("Broken.xml"));
+        // 坏文件必须留下一条警告（键由 Core 产出，措辞见 Lang.*.xaml 的 L.Core_ScanParseFail）
+        Assert.Contains(result.Warnings, w => w.Contains("L.Core_ScanParseFail"));
     }
 
     [Fact]
@@ -201,7 +205,7 @@ public class SliderSetScannerTests
 
         Assert.Empty(names);
         Assert.Single(warnings);
-        Assert.Contains("broken.xml", warnings[0]);
+        Assert.Equal("L.Core_ScanParseFail", warnings[0]);
     }
 
     /// <summary>带命名空间的 &lt;SliderSet&gt; 不算命中，对齐原实现 DescendantsAndSelf("SliderSet") 的匹配范围。</summary>
@@ -215,5 +219,64 @@ public class SliderSetScannerTests
         var warnings = new List<string>();
         Assert.Empty(SliderSetScanner.ParseSliderSetNames(file, warnings).ToList());
         Assert.Empty(warnings);
+    }
+
+    /// <summary>
+    /// 只扫各层的 SliderSets 目录：CalienteTools\BodySlide 下同级的 SliderCategories / SliderGroups /
+    /// SliderPresets 等都不是滑块组文件（BodySlide 也不读它们）。它们里面即便有 &lt;SliderSet&gt;
+    /// 或语法错误，也不该影响结果、更不该变成警告——曾经的实现会把这些目录一起递归进去。
+    /// </summary>
+    [Fact]
+    public void VirtualLayersIgnoreFilesOutsideSliderSets()
+    {
+        using var temp = new TempDir();
+        var gameData = temp.Sub("Data");
+        var modA = temp.Sub("mods", "A");
+
+        temp.File("mods", "A", "CalienteTools", "BodySlide", "SliderSets", "Real.xml", SliderSetXml("RealOutfit"));
+        temp.File("mods", "A", "CalienteTools", "BodySlide", "SliderCategories", "Cat.xml",
+            "<SliderCategories>\n\t<Slider name=\"Hips\"displayname=\"Size\" />\n</SliderCategories>\n");
+        temp.File("mods", "A", "CalienteTools", "BodySlide", "SliderGroups", "Grp.xml", SliderSetXml("ShouldNotAppear"));
+        temp.File("mods", "A", "CalienteTools", "BodySlide", "Config.xml", "<Config><ProjectPath>x</ProjectPath></Config>");
+
+        var mods = new List<(ModEntry, string)> { (new ModEntry("A", true, false, false, 0), modA) };
+        var result = SliderSetScanner.Scan(VirtualResolution(gameData, @"CalienteTools\BodySlide"), mods);
+
+        Assert.Equal(new[] { "RealOutfit" }, result.Outfits.Select(o => o.Name));
+        Assert.Empty(result.Warnings);
+    }
+
+    /// <summary>
+    /// 警告里要带上"哪个模组的哪个文件"：同名文件（CBBE.osp、CBBE.xml）在多个模组里都可能存在，
+    /// 只给文件名根本没法定位该去修哪一个。
+    /// </summary>
+    [Fact]
+    public void ParseWarningIdentifiesTheOwningModAndRelativePath()
+    {
+        using var temp = new TempDir();
+        var gameData = temp.Sub("Data");
+        var modA = temp.Sub("mods", "ArmorPackA");
+        temp.File("mods", "ArmorPackA", "CalienteTools", "BodySlide", "SliderSets", "Broken.xml",
+            "<SliderSetInfo><SliderSet name='Unfinished");
+
+        var mods = new List<(ModEntry, string)> { (new ModEntry("ArmorPackA", true, false, false, 0), modA) };
+
+        // Core 未注入取词器时只返回键名（实参被丢掉），这里装一个最小取词器把实参渲染出来。
+        var previous = CoreStrings.Localizer;
+        CoreStrings.Localizer = (key, args) => $"{key}({string.Join(" | ", args)})";
+        string warning;
+        try
+        {
+            warning = Assert.Single(
+                SliderSetScanner.Scan(VirtualResolution(gameData, @"CalienteTools\BodySlide"), mods).Warnings);
+        }
+        finally
+        {
+            CoreStrings.Localizer = previous;
+        }
+
+        Assert.StartsWith("L.Core_ScanParseFail", warning);
+        Assert.Contains("ArmorPackA", warning);
+        Assert.Contains("Broken.xml", warning);
     }
 }

@@ -31,8 +31,6 @@ public partial class SaveSuccessWindow : Window
     private static string customNoteText(bool custom) =>
         custom ? "\n\n" + L10n.Tr("L.SaveOk_CustomNote") : "";
 
-    public new void ShowDialog() => base.ShowDialog();
-
     private void OpenOut_Click(object sender, RoutedEventArgs e)
     {
         MainViewModel.OpenDirectory(_dir);

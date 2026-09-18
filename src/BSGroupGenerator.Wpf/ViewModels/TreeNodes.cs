@@ -44,7 +44,67 @@ public partial class NodeVM : ObservableObject
     [RelayCommand]
     private void ToggleExpand() => IsExpanded = !IsExpanded;
 
+    // ── 整棵树的展开/折叠（左侧列表右键菜单）──
+    // 三个命令都挂在**节点**上而不是 MainViewModel 上：菜单项的 DataContext 就是被右键的那个节点
+    // （模板与 ContextMenu 见 Themes/Controls.xaml 的 NodeTreeItemStyle），树级操作再经 Roots
+    // 拿到整棵树——否则「全部展开」只会展开自己这棵子树。
+
+    /// <summary>整棵树的根集合：由树的宿主挂在根节点上，子节点沿 Parent 链向上取。
+    /// 与 CheckedChanged 同一套做法——只在根节点上接线，懒物化的服装行不必逐个接。</summary>
+    private IReadOnlyList<NodeVM>? _roots;
+    public IReadOnlyList<NodeVM>? Roots
+    {
+        get => _roots ?? Parent?.Roots;
+        set => _roots = value;
+    }
+
+    /// <summary>整棵树的节点。宿主没提供根集合时（弹窗里的预览树等）退化成自己的子树。</summary>
+    private IEnumerable<NodeVM> TreeScope() =>
+        Roots is { Count: > 0 } roots
+            ? roots.SelectMany(root => root.WalkSelfAndDescendants())
+            : WalkSelfAndDescendants();
+
+    [RelayCommand]
+    private void ExpandAll() => SetExpandedEverywhere(true);
+
+    [RelayCommand]
+    private void CollapseAll() => SetExpandedEverywhere(false);
+
+    /// <summary>折叠其他：保留「自己 → 根」这条链（连祖先一起折了就看不见自己了），其余全部折叠，
+    /// 自己保持展开。右键选中的那一行由视图负责选中（见 Views/TreeSelection.cs）。</summary>
+    [RelayCommand]
+    private void CollapseOthers()
+    {
+        var keep = new HashSet<NodeVM>();
+        for (var node = this; node is not null; node = node.Parent)
+            keep.Add(node);
+
+        foreach (var node in TreeScope())
+            if (!keep.Contains(node))
+                node.IsExpanded = false;
+
+        IsExpanded = true; // 右键点的是折叠着的节点时也要"保持展开"（顺带物化出服装行）
+    }
+
+    /// <summary>展开是把节点自身先置 true（触发物化、建出服装行）再降入其子节点：
+    /// 物化改的是**该节点自己**的 Children，而枚举此刻走的是它父节点的 Children，两个集合不同，安全。</summary>
+    private void SetExpandedEverywhere(bool value)
+    {
+        foreach (var node in TreeScope())
+            node.IsExpanded = value;
+    }
+
     private bool _cascading;
+
+    /// <summary>勾选态变化时通知视图模型（用于刷新搬运按钮上的数量）。
+    /// 只挂在根节点上：子节点经 Parent 链向上取，懒物化的服装行不必逐个接线。
+    /// 级联过程（_cascading）与聚合重算都不触发，避免一次点击引发上百次回调。</summary>
+    private Action? _checkedChanged;
+    public Action? CheckedChanged
+    {
+        get => _checkedChanged ?? Parent?.CheckedChanged;
+        set => _checkedChanged = value;
+    }
 
     partial void OnIsCheckedChanged(bool? value)
     {
@@ -52,6 +112,7 @@ public partial class NodeVM : ObservableObject
             return;
         CascadeDown(value == true);
         Parent?.RefreshAggregated();
+        CheckedChanged?.Invoke();
     }
 
     /// <summary>用户勾选后向下级联：容器把整棵子树置为同一布尔值（占位节点跳过，null 不会来自用户点击）。</summary>
@@ -116,7 +177,9 @@ public sealed class OutfitNodeVM : NodeVM
     {
         OutfitName = outfitName;
         HasConflict = hasConflict;
-        Text = (isMember ? "✔ " : "") + (hasConflict ? outfitName + L10n.Tr("L.Tree_ConflictSuffix") : outfitName);
+        // 「已在组内」不再拼成 "✔ " 文本前缀：它由视图里的独立徽标呈现（可单独设色/对齐），
+        // 也就不会和「（同名冲突）」后缀混在同一个字符串里
+        Text = hasConflict ? outfitName + L10n.Tr("L.Tree_ConflictSuffix") : outfitName;
         IsMember = isMember;
         IsConflict = hasConflict;
         IsChecked = isChecked;

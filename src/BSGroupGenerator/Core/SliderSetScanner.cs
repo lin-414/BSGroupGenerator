@@ -35,6 +35,7 @@ public sealed record ScanProgress(ScanPhase Phase, int Current, int Total, int F
 /// 有效项目路径若是虚拟 Data 之下的目录（MO2 常态），则按 modlist 优先级模拟 USVFS 覆盖——
 /// 相对路径相同的文件由更强的模组获胜；然后对获胜文件解析 &lt;SliderSet name="..."&gt;，
 /// 同名滑块组先见者胜（与 BodySlideApp::LoadSliderSets 一致，成员名大小写敏感、不做任何变换）。
+/// 只扫各层 <c>SliderSets</c> 目录下的 *.xml / *.osp——BodySlide 也只认这一处。
 /// </summary>
 public static class SliderSetScanner
 {
@@ -45,6 +46,9 @@ public static class SliderSetScanner
     /// </summary>
     private static readonly int DefaultParseParallelism =
         Math.Max(1, Math.Min(Environment.ProcessorCount, 8));
+
+    /// <summary>滑块组文件所在子目录名（BodySlide 的固定约定）。</summary>
+    private const string SliderSetsDirName = "SliderSets";
 
     /// <param name="parseParallelism">解析阶段的并行度；0 = 自动（见 <see cref="DefaultParseParallelism"/>）。</param>
     public static ScanResult Scan(ProjectPathResolution resolution, List<(ModEntry Entry, string Dir)> enabledMods,
@@ -60,15 +64,20 @@ public static class SliderSetScanner
 
         if (suffix is not null && !string.IsNullOrWhiteSpace(resolution.GameDataPath))
         {
+            // 层目录取 <模组>\<后缀>\SliderSets，而不是 <模组>\<后缀>：
+            // BodySlide 只从 <项目路径>\SliderSets 读滑块组，CalienteTools\BodySlide 下同级的
+            // SliderCategories / SliderGroups / SliderPresets / RefTemplates / PoseData 等都不是滑块组文件，
+            // 递归进去只会白读一遍（实测约占 9%），还会把它们的语法错误报成"无法解析"。
+            var layerSuffix = Path.Combine(suffix, SliderSetsDirName);
             foreach (var (_, dir) in enabledMods)
-                layers.Add(($"{Path.GetFileName(dir.TrimEnd('\\', '/'))}", Path.Combine(dir, suffix)));
-            layers.Add(("游戏Data（本体）", Path.Combine(resolution.GameDataPath, suffix)));
-            result.LayerNotes.Add($"虚拟覆盖目录：{suffix}（{layers.Count} 层：{enabledMods.Count} 个启用模组 + 游戏Data 本体）");
+                layers.Add(($"{Path.GetFileName(dir.TrimEnd('\\', '/'))}", Path.Combine(dir, layerSuffix)));
+            layers.Add((CoreStrings.Get("L.Core_LayerGameData"), Path.Combine(resolution.GameDataPath, layerSuffix)));
+            result.LayerNotes.Add(CoreStrings.Format("L.Core_ScanVirtualLayers", layerSuffix, layers.Count, enabledMods.Count));
         }
         else
         {
-            layers.Add(("BodySlide 本体", Path.Combine(resolution.EffectivePath, "SliderSets")));
-            result.LayerNotes.Add($"单一目录模式：{layers[0].Dir}");
+            layers.Add((CoreStrings.Get("L.Core_LayerBodySlide"), Path.Combine(resolution.EffectivePath, SliderSetsDirName)));
+            result.LayerNotes.Add(CoreStrings.Format("L.Core_ScanSingleDir", layers[0].Dir));
         }
 
         // 相对路径 → 最强层的文件
@@ -106,7 +115,7 @@ public static class SliderSetScanner
             }
             catch (Exception ex)
             {
-                result.Warnings.Add($"枚举 {dir} 失败：{ex.Message}");
+                result.Warnings.Add(CoreStrings.Format("L.Core_ScanEnumFail", dir, ex.Message));
                 continue;
             }
 
@@ -124,7 +133,7 @@ public static class SliderSetScanner
                     winners.Add((rel, label, file));
             }
             filesFound += layerFileCount;
-            result.LayerNotes.Add($"  层 {label}: {layerFileCount} 个文件");
+            result.LayerNotes.Add(CoreStrings.Format("L.Core_ScanLayerFiles", label, layerFileCount));
             progress?.Report(new ScanProgress(ScanPhase.Enumerating, layerIndex + 1, layers.Count, filesFound));
         }
 
@@ -145,7 +154,7 @@ public static class SliderSetScanner
             i =>
             {
                 var names = new List<string>();
-                errorPerFile[i] = ReadSliderSetNames(winners[i].FullPath, names);
+                errorPerFile[i] = ReadSliderSetNames(winners[i].FullPath, names, Describe(winners[i].Label, winners[i].RelPath));
                 namesPerFile[i] = names;
                 // 节流：Progress<T> 每次 Report 都会投递到 UI 线程，不能逐个上报
                 var done = Interlocked.Increment(ref parsed);
@@ -153,7 +162,12 @@ public static class SliderSetScanner
                     progress?.Report(new ScanProgress(ScanPhase.Parsing, done, winners.Count, winners.Count));
             });
 
-        var byName = new Dictionary<string, OutfitEntry>(StringComparer.Ordinal);
+        // 结果顺序 = winners 顺序 → 文件内出现顺序，显式用 List 承载（不靠 Dictionary 的枚举顺序：
+        // 那是实现细节，换个运行时/实现就可能变，而"先见者胜"是必须稳定的对外行为）。
+        // HashSet 负责判重，firstIndex 只用于回查首个条目以打冲突标记。
+        var outfits = new List<OutfitEntry>();
+        var seenNames = new HashSet<string>(StringComparer.Ordinal);
+        var firstIndex = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var i = 0; i < winners.Count; i++)
         {
             var (rel, label, _) = winners[i];
@@ -162,21 +176,22 @@ public static class SliderSetScanner
                 result.Warnings.Add(error);
             foreach (var name in namesPerFile[i])
             {
-                if (byName.TryGetValue(name, out var existing))
+                if (!seenNames.Add(name))
                 {
-                    existing.HasConflict = true;
+                    outfits[firstIndex[name]].HasConflict = true;
                     continue;
                 }
-                byName[name] = new OutfitEntry
+                firstIndex[name] = outfits.Count;
+                outfits.Add(new OutfitEntry
                 {
                     Name = name,
                     OwnerLabel = label,
                     SourceFile = rel,
-                };
+                });
             }
         }
 
-        result.Outfits.AddRange(byName.Values);
+        result.Outfits.AddRange(outfits);
         return result;
     }
 
@@ -200,7 +215,8 @@ public static class SliderSetScanner
     /// 只留一条警告，与原先 XDocument.Load 一次性失败的语义一致（不会因为读了一半就留下部分结果）。
     /// 另外要求命名空间为空，对齐原实现 DescendantsAndSelf("SliderSet") 的匹配范围。
     /// </summary>
-    private static string? ReadSliderSetNames(string path, List<string> names)
+    /// <param name="display">警告里怎么称呼这个文件；不给则只用文件名。</param>
+    private static string? ReadSliderSetNames(string path, List<string> names, string? display = null)
     {
         var settings = new XmlReaderSettings
         {
@@ -228,7 +244,14 @@ public static class SliderSetScanner
         catch (Exception ex)
         {
             names.Clear();
-            return $"无法解析 {Path.GetFileName(path)}：{ex.Message}";
+            return CoreStrings.Format("L.Core_ScanParseFail", display ?? Path.GetFileName(path), ex.Message);
         }
     }
+
+    /// <summary>
+    /// 警告里的文件标识：模组名 + 层内相对路径。同一个文件名（`CBBE.osp`、`CBBE.xml`）在多个模组里都可能有，
+    /// 只给文件名分不清该去修哪一个。
+    /// </summary>
+    private static string Describe(string label, string relPath) =>
+        $"{label}{Path.DirectorySeparatorChar}{relPath}";
 }

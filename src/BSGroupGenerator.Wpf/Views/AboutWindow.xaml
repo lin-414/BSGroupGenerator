@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{DynamicResource L.About_Title}" Width="520" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
-        Background="{DynamicResource B.Window}" FontFamily="{StaticResource AppFont}" FontSize="13">
+        Background="{DynamicResource B.Window}" FontFamily="{StaticResource AppFont}" FontSize="13"
+        Style="{StaticResource AppWindow}">
     <StackPanel Margin="22,20,22,10">
         <StackPanel Orientation="Horizontal">
             <Image Source="../app.ico" Width="40" Height="40" Stretch="Uniform" />

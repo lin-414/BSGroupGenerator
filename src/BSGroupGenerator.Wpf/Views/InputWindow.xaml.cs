@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Windows;
 
 namespace BSGroupGenerator.Wpf.Views;
@@ -28,10 +27,4 @@ public partial class InputWindow : Window
     }
 
     private void Ok_Click(object sender, RoutedEventArgs e) => DialogResult = true;
-
-    protected override void OnClosing(CancelEventArgs e)
-    {
-        // 保持 DataContext 同步（TextBox 双向绑定已写回）
-        base.OnClosing(e);
-    }
 }

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{DynamicResource L.Help_Title}" Width="880" Height="700" MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterOwner" Background="{DynamicResource B.Window}"
-        FontFamily="{StaticResource AppFont}" FontSize="13">
+        FontFamily="{StaticResource AppFont}" FontSize="13" Style="{StaticResource AppWindow}">
     <DockPanel>
         <Button DockPanel.Dock="Bottom" Content="{DynamicResource L.Btn_Close}" IsCancel="True" MinWidth="90" MinHeight="30"
                 Margin="10" HorizontalAlignment="Right" />

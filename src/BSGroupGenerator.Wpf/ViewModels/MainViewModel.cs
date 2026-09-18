@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using System.Xml;
 using BSGroupGenerator.Core;
 using BSGroupGenerator.Wpf.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,7 +23,9 @@ public partial class MainViewModel : ObservableObject
     public static string AppTitle => L10n.Tr("L.App_Title");
     public const string DedicatedModName = "BS Group Generator";
 
-    public AppSettings Settings { get; } = AppSettings.Load();
+    // 共享实例：App 启动时加载并登记（AppSettings.Use）。没有 App 上下文（单测）时 Shared 惰性加载，
+    // 效果与原来的各自 Load 一致，但不会出现"两处各加载一份、互相覆盖"的问题。
+    public AppSettings Settings { get; } = AppSettings.Shared;
     public GroupStore Store { get; } = new();
 
     public List<ModEntry> Entries { get; private set; } = [];
@@ -59,7 +62,6 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _infoLine = L10n.Tr("L.Vm_NotScanned");
     [ObservableProperty] private string _statusCounts = L10n.Tr("L.Vm_NotScanned");
     [ObservableProperty] private string _outputText = L10n.Tr("L.Vm_OutputNone");
-    [ObservableProperty] private string _logText = "";
     [ObservableProperty] private ObservableCollection<GroupItem> _groups = [];
     [ObservableProperty] private int _selectedGroupIndex = -1;
     [ObservableProperty] private string _groupInfo = L10n.Tr("L.Vm_NoGroupSelected");
@@ -74,7 +76,119 @@ public partial class MainViewModel : ObservableObject
     partial void OnIsDetectingChanged(bool value) => OnPropertyChanged(nameof(IsBusy));
     partial void OnIsScanningChanged(bool value) => OnPropertyChanged(nameof(IsBusy));
 
-    private readonly StringBuilder _logBuffer = new();
+    /// <summary>保存按钮文案：未保存时补「（未保存）」后缀，与底色变化构成第二通道，
+    /// 色盲用户也能分辨当前有没有未落盘的改动。</summary>
+    public string SaveButtonLabel => IsDirty
+        ? L10n.Tr("L.Main_Save") + L10n.Tr("L.Vm_UnsavedSuffix")
+        : L10n.Tr("L.Main_Save");
+
+    partial void OnIsDirtyChanged(bool value) => OnPropertyChanged(nameof(SaveButtonLabel));
+
+    /// <summary>状态栏输出链接的悬停提示：显示完整目录（状态栏本身只放得下描述）。</summary>
+    public string OutputToolTip => ResolveOutputDirectory() ?? L10n.Tr("L.Vm_OutputUndetermined");
+
+    private readonly List<LogLine> _pendingLines = [];
+
+    /// <summary>日志行上限。超过后丢最旧的——大整合包一次扫描可达上千行，
+    /// 保留全部会一直涨内存，而用户真正要看的永远是最近这一段。</summary>
+    private const int MaxLogLines = 2000;
+
+    /// <summary>结构化日志：级别决定展开后的着色，也让折叠摘要能报出警告/错误数。</summary>
+    public ObservableCollection<LogLine> LogLines { get; } = [];
+
+    [ObservableProperty] private int _warningCount;
+    [ObservableProperty] private int _errorCount;
+    [ObservableProperty] private bool _isLogExpanded;
+    [ObservableProperty] private double _logPanelHeight = 160;
+
+    public bool HasLogIssues => WarningCount + ErrorCount > 0;
+    public int LogIssueCount => WarningCount + ErrorCount;
+
+    public string LogSummary =>
+        WarningCount == 0 && ErrorCount == 0 ? L10n.Tr("L.Log_SummaryClean")
+        : WarningCount > 0 && ErrorCount > 0 ? L10n.TrF("L.Log_SummaryBoth", WarningCount, ErrorCount)
+        : ErrorCount > 0 ? L10n.TrF("L.Log_SummaryErrors", ErrorCount)
+        : L10n.TrF("L.Log_SummaryWarnings", WarningCount);
+
+    partial void OnWarningCountChanged(int value) => RaiseLogSummary();
+    partial void OnErrorCountChanged(int value) => RaiseLogSummary();
+
+    private void RaiseLogSummary()
+    {
+        OnPropertyChanged(nameof(HasLogIssues));
+        OnPropertyChanged(nameof(LogIssueCount));
+        OnPropertyChanged(nameof(LogSummary));
+    }
+
+    /// <summary>日志刷新的最后一步：视图据此把日志列表滚到底。</summary>
+    public event Action? LogFlushed;
+
+    public void Log(string message) => AppendLog(LogLevel.Info, message);
+    public void LogWarning(string message) => AppendLog(LogLevel.Warning, message);
+    public void LogError(string message) => AppendLog(LogLevel.Error, message);
+
+    private void AppendLog(LogLevel level, string message)
+    {
+        if (_closed)
+            return;
+        _pendingLines.Add(new LogLine($"[{DateTime.Now:HH:mm:ss}] {message}", level));
+        if (level == LogLevel.Warning)
+            WarningCount++;
+        else if (level == LogLevel.Error)
+            ErrorCount++;
+        if (_pendingLines.Count > MaxLogLines)
+            _pendingLines.RemoveRange(0, _pendingLines.Count - MaxLogLines);
+        QueueLogFlush();
+    }
+
+    /// <summary>全部日志的纯文本（复制到剪贴板用）。</summary>
+    public string LogTextAll => string.Join(Environment.NewLine, LogLines.Select(l => l.Text));
+
+    public void ClearLog()
+    {
+        _pendingLines.Clear();
+        LogLines.Clear();
+        WarningCount = 0;
+        ErrorCount = 0;
+        LogFlushed?.Invoke();
+    }
+
+    /// <summary>
+    /// 合并同一轮的日志刷新。逐条设置会让绑定的控件反复重排**整段**文本，
+    /// 代价是 O(行数²)：实测 801 行要 10.6 秒，而批量刷新只需 21 ms（差 500 倍）。
+    /// 扫描结束时会按覆盖层逐层写日志（层数 = 启用模组数 + 1，大整合包可达上千行），
+    /// 正是这种爆发式写入，所以把刷新排进 Dispatcher 队列：一批 Log 只更新一次列表。
+    /// 日志内容本身仍逐条进缓冲区，不丢信息，只是显示时机合并到本轮 UI 更新之后。
+    /// </summary>
+    private void QueueLogFlush()
+    {
+        var app = System.Windows.Application.Current;
+        if (app is null)
+        {
+            FlushLog(); // 无 Dispatcher（单测、设计器）：退化成同步刷新
+            return;
+        }
+        if (_logFlushQueued)
+            return;
+        _logFlushQueued = true;
+        // Background 优先级：低于 Render，等本轮布局/渲染排完后刷一次即可
+        app.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,
+            new Action(FlushLog));
+    }
+
+    private void FlushLog()
+    {
+        _logFlushQueued = false;
+        if (_closed || _pendingLines.Count == 0)
+            return;
+        // 一次回调里连续 Add：WPF 布局是延迟的，整批只触发一次重排
+        foreach (var line in _pendingLines)
+            LogLines.Add(line);
+        _pendingLines.Clear();
+        while (LogLines.Count > MaxLogLines)
+            LogLines.RemoveAt(0);
+        LogFlushed?.Invoke();
+    }
 
     public MainViewModel()
     {
@@ -121,8 +235,11 @@ public partial class MainViewModel : ObservableObject
             InfoLine = L10n.Tr("L.Vm_NotScanned");
         }
         LogWriteTarget();
-        OnPropertyChanged(nameof(LogText));
-        UpdateMembershipMarks(); // 树节点文本也是代码拼的（✔ / 同名冲突 / [组内 x/y]），一并换语言
+        OnPropertyChanged(nameof(SaveButtonLabel));
+        OnPropertyChanged(nameof(OutputToolTip));
+        RaiseLogSummary();
+        RefreshTransferState();
+        UpdateMembershipMarks(); // 树节点文本也是代码拼的（同名冲突 / [组内 x/y]），一并换语言
         UpdateCounts();
         UpdateGroupInfo();
         UpdateTitle();
@@ -131,55 +248,11 @@ public partial class MainViewModel : ObservableObject
     public void OnViewClosed()
     {
         _closed = true;
+        DisposeDebounce(); // 关窗后不会再有输入变更，防抖计时器与它的 CTS 一并收掉
         Settings.Save();
     }
 
     private bool _logFlushQueued;
-
-    public void Log(string message)
-    {
-        if (_closed)
-            return;
-        _logBuffer.Append($"[{DateTime.Now:HH:mm:ss}] {message}\n");
-        if (_logBuffer.Length > 128 * 1024)
-        {
-            var text = _logBuffer.ToString();
-            _logBuffer.Clear();
-            _logBuffer.Append(text[^65536..]);
-        }
-        QueueLogFlush();
-    }
-
-    /// <summary>
-    /// 合并同一轮的日志刷新。逐条设置 LogText 会让绑定的 TextBox 反复重排**整段**文本，
-    /// 代价是 O(行数²)：实测 801 行要 10.6 秒，而批量刷新只需 21 ms（差 500 倍）。
-    /// 扫描结束时会按覆盖层逐层写日志（层数 = 启用模组数 + 1，大整合包可达上千行），
-    /// 正是这种爆发式写入，所以把刷新排进 Dispatcher 队列：一批 Log 只更新一次 LogText。
-    /// 日志内容本身仍逐条进缓冲区，不丢信息，只是显示时机合并到本轮 UI 更新之后。
-    /// </summary>
-    private void QueueLogFlush()
-    {
-        var app = System.Windows.Application.Current;
-        if (app is null)
-        {
-            FlushLog(); // 无 Dispatcher（单测、设计器）：退化成同步刷新
-            return;
-        }
-        if (_logFlushQueued)
-            return;
-        _logFlushQueued = true;
-        // Background 优先级：低于 Render，等本轮布局/渲染排完后刷一次即可
-        app.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,
-            new Action(FlushLog));
-    }
-
-    private void FlushLog()
-    {
-        _logFlushQueued = false;
-        if (_closed)
-            return;
-        LogText = _logBuffer.ToString();
-    }
 
     partial void OnSelectedWriteModeChanged(WriteModeItem? value)
     {
@@ -219,6 +292,7 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnSelectedInstanceChanged(Mo2Instance? value)
     {
+        InvalidateModDirCache(); // 换了实例 = 换了 mods 根目录，探测结果整体作废
         if (value is null)
         {
             Profiles = [];
@@ -258,11 +332,15 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Log(L10n.TrF("L.Log_ModlistFail", ex.Message));
+            LogError(L10n.TrF("L.Log_ModlistFail", ex.Message));
         }
     }
 
     // ── BodySlide 链 ──
+    // 命令特性必须打在**包装方法**上：XAML 绑的是 DetectBodySlideCommand，
+    // 而特性打在 Core 方法上会生成 DetectBodySlideCoreCommand——名字不匹配时按钮静默失效，
+    // 编译期毫无提示。遮罩语义（IsDetecting）本来就在包装方法里，移到这里不改变任何行为。
+    [RelayCommand]
     private async Task DetectBodySlideAsync()
     {
         IsDetecting = true;
@@ -278,7 +356,6 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
     private async Task DetectBodySlideCoreAsync()
     {
         var modsSnapshot = Mods;
@@ -354,7 +431,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Log(L10n.TrF("L.Log_ScanFail", ex));
+            LogError(L10n.TrF("L.Log_ScanFail", ex));
         }
         finally
         {
@@ -398,7 +475,19 @@ public partial class MainViewModel : ObservableObject
         if (!File.Exists(configPath))
             return new ScanOutcome(null, null, [], null, "", [L10n.TrF("L.Log_ConfigMissing", configPath)]);
 
-        var config = new BodySlideConfig(configPath);
+        // Config.xml 存在不等于能读：损坏的 XML、被截断/半写的文件、权限不足都会在构造时抛。
+        // 这些异常如果漏到 RunScanAsync 的通用 catch，用户只会看到一句"扫描失败"，无从下手；
+        // 这里就地转成带路径与具体原因的扫描结果错误项。
+        BodySlideConfig config;
+        try
+        {
+            config = new BodySlideConfig(configPath);
+        }
+        catch (Exception ex) when (ex is XmlException or InvalidDataException or IOException or UnauthorizedAccessException or FormatException)
+        {
+            return new ScanOutcome(null, null, [], null, "", [L10n.TrF("L.Log_ConfigInvalid", configPath, ex.Message)]);
+        }
+
         var resolution = BodySlideLocator.ResolveProjectPath(config, bsDir, mods, instance?.GamePath);
         var scan = SliderSetScanner.Scan(resolution, mods, progress);
         var target = ResolveWriteTargetCore(resolution, bsDir, instance, writeMode, customDir);
@@ -443,8 +532,9 @@ public partial class MainViewModel : ObservableObject
     {
         if (_closed)
             return;
+        InvalidateModDirCache(); // 扫描结束前先作废探测缓存：本次磁盘状态可能已经变了（新装的模组）
         foreach (var error in outcome.Errors)
-            Log(L10n.TrF("L.Log_Error", error));
+            LogError(L10n.TrF("L.Log_Error", error));
 
         Resolution = outcome.Resolution;
         Scan = outcome.Result;
@@ -467,7 +557,7 @@ public partial class MainViewModel : ObservableObject
         {
             Log(L10n.TrF("L.Log_ScanDone", scan.WinnerFileCount, scan.Outfits.Count, scan.Warnings.Count));
             foreach (var warning in scan.Warnings.Take(20))
-                Log(L10n.TrF("L.Log_Warning", warning));
+                LogWarning(L10n.TrF("L.Log_Warning", warning));
         }
 
         // 只在内存中还没有组时才载入上次写出的文件，避免覆盖未保存的修改
@@ -484,7 +574,7 @@ public partial class MainViewModel : ObservableObject
 
     private bool IsVirtualScan =>
         Resolution is not null
-        && Resolution.Kind is ProjectPathKind.GameDataCalienteTools or ProjectPathKind.GameDataTools
+        && (Resolution.Kind is ProjectPathKind.GameDataCalienteTools or ProjectPathKind.GameDataTools)
         && Entries.Count > 0;
 
     public Dictionary<string, string> OwnerByOutfit()
@@ -531,7 +621,7 @@ public partial class MainViewModel : ObservableObject
                 }
 
                 var onDisk = SelectedInstance is not null &&
-                             Directory.Exists(System.IO.Path.Combine(SelectedInstance.ModsDirectory, entry.Name));
+                             ModDirExists(Path.Combine(SelectedInstance.ModsDirectory, entry.Name));
                 outfitsByOwner.TryGetValue(entry.Name, out var outfits);
                 outfits ??= [];
                 if (outfits.Count > 0)
@@ -570,4 +660,22 @@ public partial class MainViewModel : ObservableObject
             : name;
 
     private bool IsInAnyGroup(string outfit) => Store.IsInAnyGroup(outfit);
+
+    /// <summary>逐模组"目录是否在磁盘上"的探测缓存（键 = 模组目录全路径）。
+    /// 树、结构弹窗与规则预览会反复问同一批模组，而每次 Directory.Exists 都要走一次文件系统。
+    /// 只用于减少重复探测，判定语义与直接调用完全一致；缓存内容只在扫描完成/切换实例时失效
+    ///（这两处是模组目录集合可能变化的时刻）。只在 UI 线程访问，无需加锁。</summary>
+    private readonly Dictionary<string, bool> _modDirExistsCache = new(StringComparer.OrdinalIgnoreCase);
+
+    private bool ModDirExists(string dir)
+    {
+        if (!_modDirExistsCache.TryGetValue(dir, out var exists))
+        {
+            exists = Directory.Exists(dir);
+            _modDirExistsCache[dir] = exists;
+        }
+        return exists;
+    }
+
+    private void InvalidateModDirCache() => _modDirExistsCache.Clear();
 }

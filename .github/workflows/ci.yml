@@ -12,6 +12,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # 静态检查，秒级完成，放在 .NET 构建之前以便快速失败
+      - name: 检查界面语言文件一致性
+        env:
+          PYTHONUTF8: '1'   # 脚本输出含中文，Windows 上重定向输出需钉住 UTF-8
+        run: python tools/verify_l10n.py src/BSGroupGenerator.Wpf
+
+      # 对比度不达标是"看不见的回归"：颜色改错不会让任何测试变红，只有眼睛能发现。
+      # 这里按 WCAG 2.1 逐对算（正文 4.5:1、控件边界 3:1），两套色板都查。
+      - name: 检查色板对比度
+        env:
+          PYTHONUTF8: '1'
+        run: python tools/verify_contrast.py
+
+      # 色板里有正确的键 ≠ 控件真的拿到了它。隐式样式按元素**确切类型**匹配，x:Class 生成的
+      # MainWindow 与各对话框都是 Window 的派生类，拿不到 TargetType="Window" 的隐式样式，
+      # 会退回系统默认的白底黑字。这条挡的就是那次真实回归（暗色主题整窗发白）。
+      - name: 检查主题接线
+        env:
+          PYTHONUTF8: '1'
+        run: python tools/verify_theme.py
+
       - name: 安装 .NET SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -24,3 +50,10 @@ jobs:
         run: |
           dotnet test tests/BSGroupGenerator.Tests/BSGroupGenerator.Tests.csproj -c Release
           dotnet test tests/BSGroupGenerator.Wpf.Tests/BSGroupGenerator.Wpf.Tests.csproj -c Release
+
+      # 译文/主题的布局回归同样"不会让任何测试变红"：容器按基准语言的标签宽度定尺寸，
+      # 换一种更长的语言就被静默裁掉。这里加载真实资源字典与真实窗口 XAML 离屏排一遍，
+      # 覆盖 4 语言 × 2 主题 × 11 个窗口 × 各档尺寸，断言 0 处溢出/裁切。
+      - name: 检查布局溢出
+        run: dotnet run --project tools/layout-probe/LayoutProbe.csproj -c Release
+

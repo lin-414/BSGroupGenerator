@@ -52,7 +52,7 @@ public static class SliderGroupFile
             sb.Append(invalid.Contains(c) ? '_' : c);
         var name = sb.ToString().TrimEnd('.', ' ');
         if (name.Length == 0)
-            name = "未命名组";
+            name = CoreStrings.Get("L.Core_FileUnnamedGroup");
         var stem = name.Contains('.') ? name[..name.IndexOf('.')] : name;
         if (ReservedDeviceNames.Contains(stem))
             name = "_" + name; // Windows 保留设备名（CON/NUL/COM1…）连同任意扩展名都禁用
@@ -97,9 +97,9 @@ public static class SliderGroupFile
     public static List<SliderGroup> Load(string path)
     {
         var doc = XDocument.Load(path, LoadOptions.None);
-        var root = doc.Root ?? throw new InvalidDataException("空文件");
+        var root = doc.Root ?? throw new InvalidDataException(CoreStrings.Get("L.Core_FileEmpty"));
         if (root.Name.LocalName != "SliderGroups")
-            throw new InvalidDataException("缺少 <SliderGroups> 根元素，不是 BodySlide 分组文件");
+            throw new InvalidDataException(CoreStrings.Get("L.Core_FileNotSliderGroups"));
 
         var groups = new List<SliderGroup>();
         foreach (var groupElement in root.Elements("Group"))
@@ -137,12 +137,30 @@ public static class SliderGroupFile
         };
         // 先写临时文件再替换：写一半崩溃/断电不会留下损坏的分组 XML
         var temp = path + ".tmp";
-        using (var writer = XmlWriter.Create(temp, settings))
-            doc.Save(writer);
-        if (File.Exists(path))
-            File.Replace(temp, path, null);
-        else
-            File.Move(temp, path);
+        try
+        {
+            using (var writer = XmlWriter.Create(temp, settings))
+                doc.Save(writer);
+            if (File.Exists(path))
+                File.Replace(temp, path, null);
+            else
+                File.Move(temp, path);
+        }
+        catch
+        {
+            // 失败时清掉半成品临时文件：否则输出目录里会留下一个来路不明的 .tmp，
+            // 用户既不知道它是什么、也不知道能不能删。清理本身失败无所谓，别盖住原始异常。
+            try
+            {
+                if (File.Exists(temp))
+                    File.Delete(temp);
+            }
+            catch
+            {
+                // 忽略
+            }
+            throw;
+        }
     }
 
     /// <summary>合并导入（组名按不区分大小写匹配，保留先出现的写法；成员按精确去重）。</summary>

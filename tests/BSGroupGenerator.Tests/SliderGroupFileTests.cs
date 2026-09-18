@@ -129,4 +129,30 @@ public class SliderGroupFileTests
     [InlineData("   ")]
     public void FileNameForGroupAlwaysProducesBareFileName(string groupName)
         => Assert.True(SliderGroupFile.IsBareFileName(SliderGroupFile.FileNameForGroup(groupName)));
+
+    /// <summary>写盘失败时不能把半成品 .tmp 留在输出目录里（用户既不知它是什么、也不敢删）。
+    /// 触发方式：目标文件只读 → File.Replace 失败。</summary>
+    [Fact]
+    public void FailedSaveRemovesTempFile()
+    {
+        using var temp = new TempDir();
+        var path = System.IO.Path.Combine(temp.Path, "groups.xml");
+        System.IO.File.WriteAllText(path, "<SliderGroups />");
+
+        var original = System.IO.File.GetAttributes(path);
+        System.IO.File.SetAttributes(path, original | System.IO.FileAttributes.ReadOnly);
+        try
+        {
+            Assert.ThrowsAny<Exception>(() =>
+                SliderGroupFile.Save(path, new[] { new SliderGroup("A", new[] { "x" }) }));
+
+            Assert.False(System.IO.File.Exists(path + ".tmp"));
+            // 原文件保持原样（没被半成品覆盖）
+            Assert.Equal("<SliderGroups />", System.IO.File.ReadAllText(path));
+        }
+        finally
+        {
+            System.IO.File.SetAttributes(path, original);
+        }
+    }
 }

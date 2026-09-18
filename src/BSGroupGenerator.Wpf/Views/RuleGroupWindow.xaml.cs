@@ -47,6 +47,9 @@ public partial class RuleGroupWindow : Window
             _previewDebounce.Stop();
             UpdatePreview();
         };
+        // 窗口关掉后 Tick 还挂着就等于计时器继续活着（窗口对象也一起被吊住）。
+        // DispatcherTimer 不是 IDisposable，Stop 掉即可。
+        Closed += (_, _) => _previewDebounce.Stop();
         if (_onSavePreset is null)
             PresetButton.Visibility = Visibility.Collapsed;
         UpdatePreview();

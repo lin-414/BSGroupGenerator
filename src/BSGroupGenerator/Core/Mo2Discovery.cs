@@ -7,7 +7,11 @@ namespace BSGroupGenerator.Core;
 /// </summary>
 public static class Mo2Discovery
 {
-    public static string GlobalRoot =>
+    /// <summary>测试可替换的全局实例根目录（null = 真实 <c>%LOCALAPPDATA%\ModOrganizer</c>）。
+    /// 单测必须能挡住对用户真实 MO2 目录的枚举，否则用例结果取决于跑测试那台机器装了什么。</summary>
+    public static string? GlobalRootOverride { get; set; }
+
+    public static string GlobalRoot => GlobalRootOverride ??
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ModOrganizer");
 
     public static List<Mo2Instance> Discover(IEnumerable<string> extraDirs)
@@ -17,11 +21,19 @@ public static class Mo2Discovery
 
         if (Directory.Exists(GlobalRoot))
         {
-            foreach (var dir in Directory.EnumerateDirectories(GlobalRoot))
+            try
             {
-                var ini = Path.Combine(dir, "ModOrganizer.ini");
-                if (File.Exists(ini) && seen.Add(dir))
-                    found.Add(new Mo2Instance(dir, ini, Mo2InstanceKind.Global));
+                foreach (var dir in Directory.EnumerateDirectories(GlobalRoot))
+                {
+                    var ini = Path.Combine(dir, "ModOrganizer.ini");
+                    if (File.Exists(ini) && seen.Add(dir))
+                        found.Add(new Mo2Instance(dir, ini, Mo2InstanceKind.Global));
+                }
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                // 枚举失败（权限不足、磁盘/设备错误）就跳过这个根目录：Discover 在 ViewModel 的
+                // 构造函数链里被调用，这里抛出去等于"启动即崩"，而少列几个实例最多是重新指一次目录
             }
         }
 
@@ -52,22 +64,11 @@ public static class Mo2Discovery
         if (string.IsNullOrWhiteSpace(dir) || !Directory.Exists(dir))
             return;
 
+        // 判据只有 ModOrganizer.ini。便携安装的 ini 就写在 exe 同级，与上面这条是**同一个路径**，
+        // 所以"只有 ModOrganizer.exe 没有 ini"的目录不登记（MO2 自己也不认这种目录为实例）。
         var ini = Path.Combine(dir, "ModOrganizer.ini");
-        if (File.Exists(ini))
-        {
-            if (seen.Add(dir))
-                list.Add(new Mo2Instance(dir, ini, kind));
-            return;
-        }
-
-        // 便携安装：ModOrganizer.exe 同级的 ModOrganizer.ini 才是实例 ini
-        var exe = Path.Combine(dir, "ModOrganizer.exe");
-        if (File.Exists(exe))
-        {
-            var portableIni = Path.Combine(dir, "ModOrganizer.ini");
-            if (File.Exists(portableIni) && seen.Add(dir))
-                list.Add(new Mo2Instance(dir, portableIni, Mo2InstanceKind.Portable));
-        }
+        if (File.Exists(ini) && seen.Add(dir))
+            list.Add(new Mo2Instance(dir, ini, kind));
     }
 
     private static IEnumerable<string> CommonPortableLocations()

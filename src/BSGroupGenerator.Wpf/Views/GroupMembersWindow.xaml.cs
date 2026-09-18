@@ -118,12 +118,11 @@ public partial class GroupMembersWindow : Window
 
         if (selected.Count == 0)
         {
-            MessageBox.Show(this, L10n.Tr("L.Msg_SelectOutfitsFirst"), L10n.Tr("L.Title_Tip"),
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Notify.Info(this, L10n.Tr("L.Title_Tip"), L10n.Tr("L.Msg_SelectOutfitsFirst"));
             return;
         }
-        if (MessageBox.Show(this, L10n.TrF("L.Msg_ConfirmRemove", selected.Count, _group.Name), L10n.Tr("L.Title_Confirm"),
-                MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+        if (!Notify.Confirm(this, L10n.Tr("L.Title_Confirm"),
+                L10n.TrF("L.Msg_ConfirmRemove", selected.Count, _group.Name), destructive: true))
             return;
 
         _beforeChange();

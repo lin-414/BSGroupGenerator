@@ -1,14 +1,33 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Navigation;
 using BSGroupGenerator.Wpf.Services;
 
 namespace BSGroupGenerator.Wpf.Views;
 
-/// <summary>程序内使用说明：分章节的详细帮助（FlowDocument 排版，可滚动、可复制）。
-/// 文案取自语言资源（L.Help_01…），中英各一份。</summary>
+/// <summary>程序内使用说明：先给「常见任务速查」（我要做什么 → 怎么做），再给界面参考手册。
+/// 正文取自语言资源（L.Help_*），FlowDocument 排版，可滚动、可复制。
+///
+/// 开头放目录而不是长篇正文，是因为原来的帮助是一整块密排文字：用户带着一个具体问题
+/// （"某个服装归错组了怎么办"）进来，得从头读到尾。任务导向的入口 + 可跳转目录能把
+/// 这一步压到一眼。</summary>
 public partial class HelpWindow : Window
 {
+    /// <summary>目录项 → 章节锚点。键与标题 Paragraph 的 Name 一一对应。</summary>
+    private static readonly (string Key, string Anchor)[] Toc =
+    [
+        ("L.Help_H1", "sec1"),
+        ("L.Help_H2", "sec2"),
+        ("L.Help_H3", "sec3"),
+        ("L.Help_H4", "sec4"),
+        ("L.Help_H5", "sec5"),
+        ("L.Help_H6", "sec6"),
+        ("L.Help_H7", "sec7"),
+    ];
+
+    private readonly Dictionary<string, Paragraph> _anchors = new(StringComparer.Ordinal);
+
     public HelpWindow()
     {
         InitializeComponent();
@@ -35,17 +54,67 @@ public partial class HelpWindow : Window
 
     private static Paragraph B(string text) => P("  · " + text);
 
-    private static void BuildContent(FlowDocument doc)
+    /// <summary>章节标题，同时登记为锚点。</summary>
+    private Paragraph H(string key, string anchor)
+    {
+        var para = P(L10n.Tr(key), heading: true);
+        para.Name = anchor;
+        _anchors[anchor] = para;
+        return para;
+    }
+
+    /// <summary>目录。FlowDocumentScrollViewer 不会自己处理 Hyperlink 的片段导航，
+    /// 所以拦下 RequestNavigate 直接对目标段落 BringIntoView —— 比给每段挂
+    /// <c>&lt;a name&gt;</c> 等价物可靠，也不依赖滚动查看器的内部实现。</summary>
+    private void BuildToc(FlowDocument doc)
+    {
+        doc.Blocks.Add(P(L10n.Tr("L.Help_Toc"), heading: true));
+        doc.Blocks.Add(P(L10n.Tr("L.Help_TocHint")));
+        foreach (var (key, anchor) in Toc)
+        {
+            var link = new Hyperlink(new Run(L10n.Tr(key)))
+            {
+                // NavigateUri 只为「可点 + 手型光标」而设，真正的跳转由下面的 RequestNavigate 做。
+                NavigateUri = new Uri("#" + anchor, UriKind.Relative),
+                TextDecorations = null,
+            };
+            link.SetResourceReference(TextElement.ForegroundProperty, "B.AccentText");
+            link.RequestNavigate += (_, e) =>
+            {
+                e.Handled = true;
+                // ⚠️ 别读 e.Uri.Fragment：NavigateUri 是**相对** URI，而 Uri.Fragment 对相对 URI 会抛
+                // InvalidOperationException（"This operation is not supported for a relative URI"），
+                // 结果目录里每一条链接点下去都弹一次错误框。锚点直接取循环变量即可
+                //（foreach 的迭代变量每次迭代独立，闭包捕获安全）。
+                if (_anchors.TryGetValue(anchor, out var target))
+                    target.BringIntoView();
+            };
+            doc.Blocks.Add(new Paragraph(link) { Margin = new Thickness(0, 1, 0, 1) });
+        }
+    }
+
+    private void BuildContent(FlowDocument doc)
     {
         doc.Blocks.Add(P(L10n.Tr("L.Help_01")));
+        BuildToc(doc);
 
-        doc.Blocks.Add(P(L10n.Tr("L.Help_H1"), heading: true));
+        // 一、常见任务速查
+        doc.Blocks.Add(H("L.Help_H1", "sec1"));
+        doc.Blocks.Add(B(L10n.Tr("L.Help_Task1")));
+        doc.Blocks.Add(B(L10n.Tr("L.Help_Task2")));
+        doc.Blocks.Add(B(L10n.Tr("L.Help_Task3")));
+        doc.Blocks.Add(B(L10n.Tr("L.Help_Task4")));
+        doc.Blocks.Add(B(L10n.Tr("L.Help_Task5")));
+
+        // 二、快速上手
+        doc.Blocks.Add(H("L.Help_H2", "sec2"));
         doc.Blocks.Add(P(L10n.Tr("L.Help_02")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_03")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_04")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_05")));
 
-        doc.Blocks.Add(P(L10n.Tr("L.Help_H2"), heading: true));
+        // 三、界面各区域说明
+        doc.Blocks.Add(H("L.Help_H3", "sec3"));
         doc.Blocks.Add(P(L10n.Tr("L.Help_S2_Top")));
         doc.Blocks.Add(B(L10n.Tr("L.Help_06")));
         doc.Blocks.Add(B(L10n.Tr("L.Help_07")));
@@ -66,12 +135,14 @@ public partial class HelpWindow : Window
         doc.Blocks.Add(B(L10n.Tr("L.Help_19")));
         doc.Blocks.Add(B(L10n.Tr("L.Help_20")));
 
-        doc.Blocks.Add(P(L10n.Tr("L.Help_H3"), heading: true));
+        // 四、保存与文件布局
+        doc.Blocks.Add(H("L.Help_H4", "sec4"));
         doc.Blocks.Add(P(L10n.Tr("L.Help_21")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_22")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_23")));
 
-        doc.Blocks.Add(P(L10n.Tr("L.Help_H4"), heading: true));
+        // 五、规则归组
+        doc.Blocks.Add(H("L.Help_H5", "sec5"));
         doc.Blocks.Add(P(L10n.Tr("L.Help_24")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_25")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_26")));
@@ -81,14 +152,16 @@ public partial class HelpWindow : Window
         doc.Blocks.Add(P(L10n.Tr("L.Help_30")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_31")));
 
-        doc.Blocks.Add(P(L10n.Tr("L.Help_H5"), heading: true));
+        // 六、撤销与输出位置
+        doc.Blocks.Add(H("L.Help_H6", "sec6"));
         doc.Blocks.Add(P(L10n.Tr("L.Help_32")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_33")));
         doc.Blocks.Add(B(L10n.Tr("L.Help_34")));
         doc.Blocks.Add(B(L10n.Tr("L.Help_35")));
         doc.Blocks.Add(B(L10n.Tr("L.Help_36")));
 
-        doc.Blocks.Add(P(L10n.Tr("L.Help_H6"), heading: true));
+        // 七、常见问题
+        doc.Blocks.Add(H("L.Help_H7", "sec7"));
         doc.Blocks.Add(P(L10n.Tr("L.Help_37")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_38")));
         doc.Blocks.Add(P(L10n.Tr("L.Help_39")));

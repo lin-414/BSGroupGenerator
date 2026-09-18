@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{DynamicResource L.RulePresets_Title}" Width="620" Height="460" WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False" Background="{DynamicResource B.Window}"
-        FontFamily="{StaticResource AppFont}" FontSize="13">
+        FontFamily="{StaticResource AppFont}" FontSize="13" Style="{StaticResource AppWindow}">
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
             <Button Content="{DynamicResource L.RulePresets_New}" Click="NewPreset_Click" MinWidth="96" MinHeight="28"
@@ -33,8 +33,10 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            <!-- 居中的空状态提示必须允许换行：按内容宽度排列时会比窗口还宽，两侧一起溢出 -->
             <TextBlock x:Name="EmptyHint" Text="{DynamicResource L.RulePresets_Empty}"
                        Foreground="{DynamicResource B.TextDim}" FontStyle="Italic"
+                       TextWrapping="Wrap" TextAlignment="Center" Margin="16,0"
                        HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" />
         </Grid>
     </DockPanel>

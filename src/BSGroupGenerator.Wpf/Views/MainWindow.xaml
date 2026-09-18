@@ -1,13 +1,23 @@
 <Window x:Class="BSGroupGenerator.Wpf.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{Binding WindowTitle}" Height="780" Width="1160" MinHeight="660" MinWidth="1000"
+        Title="{Binding WindowTitle}" Height="820" Width="1240" MinHeight="720" MinWidth="1000"
         WindowStartupLocation="CenterScreen"
-        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True"
-        Background="{DynamicResource B.Window}" FontFamily="{StaticResource AppFont}" FontSize="13"
-        AllowDrop="True">
+        AllowDrop="True"
+        Background="{DynamicResource B.Window}" Style="{StaticResource AppWindow}">
+    <!-- 背景/前景/字体/渲染选项来自 Themes/Controls.xaml 的 AppWindow 样式，必须**显式**套用：
+         TargetType="Window" 的隐式样式按确切类型匹配，不会作用到 MainWindow 这类派生窗口，
+         漏掉这一句就退回系统默认的白底黑字（暗色主题下整窗发白）。
+         仍额外写一份 Background 兜底——本地值优先于样式 setter，样式万一失配也不会变白。
+         MinHeight 从 660 提到 720：660 下日志区（96）+ 按钮行 + 状态栏会把主分栏压到不足 300，
+         旧版靠 DockPanel + MinHeight=300 硬撑，结果右侧按钮压住组列表、主操作行被裁。
+         现在整体用显式 Grid 行定义，任何尺寸下只压缩内容区，不会互相覆盖。 -->
+    <!-- 命令名以「生成的属性名」为准，不是方法名：CommunityToolkit.Mvvm 生成命令时会去掉 Async 后缀，
+         SaveAsync() → SaveCommand、DetectBodySlideAsync() → DetectBodySlideCommand。
+         写错后缀（例如 SaveAsyncCommand）不会编译报错，只会让按钮静默失效。
+         绑定路径与 ViewModel 属性的对应关系由 XamlBindingTests 校验。 -->
     <Window.InputBindings>
-        <KeyBinding Modifiers="Control" Key="S" Command="{Binding SaveAsyncCommand}" />
+        <KeyBinding Modifiers="Control" Key="S" Command="{Binding SaveCommand}" />
         <KeyBinding Modifiers="Control" Key="Z" Command="{Binding UndoCommand}" />
     </Window.InputBindings>
     <Window.Resources>
@@ -15,13 +25,35 @@
     </Window.Resources>
     <!-- 根用 Grid 包住整窗内容：扫描遮罩作为最后一个子元素盖在全窗口之上 -->
     <Grid>
-        <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="{DynamicResource L.Menu_Tools}">
-                <MenuItem Header="{DynamicResource L.Menu_Diagnostics}" Click="Diagnostics_Click" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="0" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ── 行 0：菜单 ── -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="{DynamicResource L.Menu_File}">
+                <MenuItem Header="{DynamicResource L.Menu_Save}" InputGestureText="Ctrl+S"
+                          Command="{Binding SaveCommand}" />
+                <MenuItem Header="{DynamicResource L.Menu_ImportGroups}" Click="Import_Click" />
                 <Separator />
-                <MenuItem Header="{DynamicResource L.Menu_CleanupStale}" Command="{Binding CleanupStaleMembersCommand}" />
+                <MenuItem Header="{DynamicResource L.Menu_Exit}" InputGestureText="Alt+F4" Click="Exit_Click" />
+            </MenuItem>
+            <!-- 撤销此前只挂在 Ctrl+Z 上：删掉右侧按钮后它就成了"看不见的功能"，
+                 而撤销是这批分组操作唯一的后悔药，必须能被找到 -->
+            <MenuItem Header="{DynamicResource L.Menu_Edit}">
+                <MenuItem Header="{DynamicResource L.Menu_Undo}" InputGestureText="Ctrl+Z"
+                          Command="{Binding UndoCommand}" />
+            </MenuItem>
+            <MenuItem Header="{DynamicResource L.Menu_Tools}">
                 <MenuItem Header="{DynamicResource L.Menu_RulePresets}" Click="RulePresets_Click" />
+                <MenuItem Header="{DynamicResource L.Menu_CleanupStale}" Command="{Binding CleanupStaleMembersCommand}" />
+                <Separator />
+                <MenuItem Header="{DynamicResource L.Menu_Diagnostics}" Click="Diagnostics_Click" />
             </MenuItem>
             <!-- 主题与语言提到顶层：点一下菜单栏即展开，不必先进「设置」 -->
             <MenuItem Header="{DynamicResource L.Menu_Theme}">
@@ -33,18 +65,20 @@
             <MenuItem Header="{DynamicResource L.Menu_Language}">
                 <MenuItem x:Name="MiLangZh" Header="中文" Tag="zh" IsCheckable="True" Click="Lang_Click" />
                 <MenuItem x:Name="MiLangEn" Header="English" Tag="en" IsCheckable="True" Click="Lang_Click" />
+                <MenuItem x:Name="MiLangRu" Header="Русский" Tag="ru" IsCheckable="True" Click="Lang_Click" />
+                <MenuItem x:Name="MiLangFr" Header="Français" Tag="fr" IsCheckable="True" Click="Lang_Click" />
             </MenuItem>
-            <MenuItem Header="{DynamicResource L.Menu_Settings}">
+            <!-- 「使用说明」「关于」不是设置项，独立成「帮助」菜单 -->
+            <MenuItem Header="{DynamicResource L.Menu_Help}">
+                <MenuItem Header="{DynamicResource L.Menu_Manual}" InputGestureText="F1" Click="Help_Click" />
                 <MenuItem Header="{DynamicResource L.Menu_CheckUpdate}" Click="CheckUpdate_Click" />
-                <MenuItem Header="{DynamicResource L.Menu_Help}" Click="Help_Click" />
-                <MenuItem Header="{DynamicResource L.Menu_About}" Click="About_Click" />
                 <Separator />
-                <MenuItem Header="{DynamicResource L.Menu_Exit}" Click="Exit_Click" />
+                <MenuItem Header="{DynamicResource L.Menu_About}" Click="About_Click" />
             </MenuItem>
         </Menu>
 
-        <!-- 顶部设置区 -->
-        <Grid DockPanel.Dock="Top" Margin="12,8,12,4">
+        <!-- ── 行 1：顶部设置区 ── -->
+        <Grid Grid.Row="1" Margin="12,8,12,4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -105,55 +139,26 @@
             </StackPanel>
 
             <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Text="{Binding InfoLine}"
-                       Foreground="{DynamicResource B.TextDim}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                       Foreground="{DynamicResource B.TextDim}" Margin="0,6,0,0"
+                       TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                       MaxHeight="40" ToolTip="{Binding InfoLine}" />
         </Grid>
 
-        <!-- 底部固定区先入栈（状态栏最底 → 日志 → 保存按钮），主分栏作为 DockPanel 填充子元素兜住剩余空间，
-             避免默认窗口高度下这些区域被树内容挤出窗口 -->
-        <!-- StatusBar 默认主题样式会显式设前景色盖过窗口继承，须再指回主题文字色 -->
-        <StatusBar DockPanel.Dock="Bottom" Background="{DynamicResource B.Panel}" BorderBrush="{DynamicResource B.BorderSoft}"
-                   Foreground="{DynamicResource B.Text}" BorderThickness="0,1,0,0">
-            <StatusBarItem>
-                <TextBlock Text="{Binding StatusCounts}" />
-            </StatusBarItem>
-            <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock x:Name="OutputLink" Text="{Binding OutputText}" Foreground="{DynamicResource B.AccentText}"
-                           MouseLeftButtonUp="Output_Click" Cursor="Hand" />
-            </StatusBarItem>
-        </StatusBar>
-
-        <!-- 日志 -->
-        <TextBox DockPanel.Dock="Bottom" Height="96" Margin="12,0,12,4"
-                 Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True"
-                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                 FontFamily="{StaticResource MonoFont}" FontSize="12"
-                 x:Name="LogBox" />
-
-        <Button DockPanel.Dock="Bottom" Content="{DynamicResource L.Main_Save}" Height="34" MinWidth="160" Margin="12,6,12,4"
-                Command="{Binding SaveAsyncCommand}" HorizontalAlignment="Right">
-            <Button.Style>
-                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsDirty}" Value="True">
-                            <Setter Property="Background" Value="#E8A33A" />
-                            <Setter Property="ToolTip" Value="{DynamicResource L.Main_SaveDirtyTip}" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
-
-        <!-- 主分栏（DockPanel 最后的填充子元素） -->
-        <Grid Margin="12,4,12,4" MinHeight="300">
+        <!-- ── 行 2：主分栏（树 | 搬运操作栏 | 分组）── -->
+        <Grid Grid.Row="2" Margin="12,4,12,4">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="6" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" MinWidth="220" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="220" />
             </Grid.ColumnDefinitions>
 
             <!-- 左：模组树 -->
-            <DockPanel Grid.Column="0">
-                <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="120" />
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="8" />
@@ -163,7 +168,7 @@
                     <Grid Grid.Column="0">
                         <TextBox x:Name="FilterBox" Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged, Delay=0}" />
                         <TextBlock Text="{DynamicResource L.Main_FilterOutfits}" IsHitTestVisible="False" Foreground="{DynamicResource B.TextDim}"
-                                   Margin="8,0,0,0" VerticalAlignment="Center">
+                                   TextTrimming="CharacterEllipsis" Margin="8,0,0,0" VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -179,7 +184,7 @@
                     <Grid Grid.Column="2">
                         <TextBox x:Name="ModFilterBox" Text="{Binding ModFilterText, UpdateSourceTrigger=PropertyChanged, Delay=0}" />
                         <TextBlock Text="{DynamicResource L.Main_FilterMods}" IsHitTestVisible="False" Foreground="{DynamicResource B.TextDim}"
-                                   Margin="8,0,0,0" VerticalAlignment="Center">
+                                   TextTrimming="CharacterEllipsis" Margin="8,0,0,0" VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -195,104 +200,323 @@
                     <CheckBox Grid.Column="3" Content="{DynamicResource L.Main_UnassignedOnly}" Margin="10,0,0,0"
                               VerticalAlignment="Center" IsChecked="{Binding UnassignedOnly}" />
                 </Grid>
-                <TreeView ItemsSource="{Binding TreeRoots}">
-                    <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                            <StackPanel Orientation="Horizontal">
-                                <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
-                                          VerticalAlignment="Center" Margin="0,0,5,0">
-                                    <CheckBox.Style>
-                                        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsPlaceholder}" Value="True">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </CheckBox.Style>
-                                </CheckBox>
-                                <TextBlock Text="{Binding Text}" VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMember}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource B.Member}" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsConflict}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource B.Conflict}" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsSeparator}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource B.TextDim}" />
-                                                    <Setter Property="FontWeight" Value="Bold" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsPlaceholder}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource B.TextDim}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </StackPanel>
-                        </HierarchicalDataTemplate>
-                    </TreeView.ItemTemplate>
-                </TreeView>
-            </DockPanel>
 
-            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="Transparent" />
+                <Grid Grid.Row="1">
+                    <TreeView x:Name="OutfitTree" ItemsSource="{Binding TreeRoots}"
+                              ItemContainerStyle="{StaticResource NodeTreeItemStyle}">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <!-- 用 Grid 而不是横向 StackPanel：横向 StackPanel 会给子元素无限宽度，
+                                     TextTrimming 就永远不会触发，超长服装名会撑出横向滚动条 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
+                                              VerticalAlignment="Center" Margin="0,0,5,0">
+                                        <CheckBox.Style>
+                                            <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPlaceholder}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </CheckBox.Style>
+                                    </CheckBox>
+                                    <!-- 「已在组内」独立成徽标：以前是拼进 Text 的 "✔ " 前缀，
+                                         既没法单独设色/对齐，又和「（同名冲突）」后缀挤在同一个字符串里 -->
+                                    <Path Grid.Column="1" Data="M 1.5 5 L 5 8.5 L 10.5 1.5"
+                                          Stretch="Uniform" Width="10" Height="8" Margin="0,0,5,0"
+                                          VerticalAlignment="Center"
+                                          Stroke="{DynamicResource B.Member}" StrokeThickness="2"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                          StrokeLineJoin="Round">
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <!-- Hidden 而非 Collapsed：保持成员/非成员行的文字左边缘对齐 -->
+                                                <Setter Property="Visibility" Value="Hidden" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsMember}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                    <TextBlock Grid.Column="2" Text="{Binding Text}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding Text}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsConflict}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource B.Conflict}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsSeparator}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource B.TextDim}" />
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsPlaceholder}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource B.TextDim}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                    <!-- 空状态：未扫描时树是纯空白，看起来像卡住了 -->
+                    <TextBlock Style="{StaticResource EmptyStateText}" Text="{DynamicResource L.Empty_Tree}"
+                               Visibility="{Binding ShowTreeEmptyState, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </Grid>
+
+            <!-- 中：搬运操作栏。把「选中 → 搬运」的方向做成空间关系，
+                 主操作因此不必再和组管理按钮挤在同一面按钮墙上；标题也就不用写操作步骤了。 -->
+            <Grid Grid.Column="1">
+                <!-- 6px 拖拽条留在左缘，保住两栏宽度可调；ResizeBehavior=PreviousAndNext
+                     让它改的是左右两栏（都是 *），中间这一列（Auto）不受影响 -->
+                <GridSplitter Width="6" HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                              Background="Transparent" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <Button x:Name="AddToGroupButton" Style="{StaticResource PrimaryButton}"
+                            Content="{Binding TransferAddLabel}"
+                            Command="{Binding ApplyCheckedToCurrentGroupCommand}" CommandParameter="add"
+                            IsEnabled="{Binding CanTransferAdd}"
+                            ToolTipService.ShowOnDisabled="True" ToolTip="{Binding TransferAddTip}"
+                            MinWidth="112" Margin="0,0,0,8" />
+                    <Button x:Name="RemoveFromGroupButton"
+                            Content="{Binding TransferRemoveLabel}"
+                            Command="{Binding ApplyCheckedToCurrentGroupCommand}" CommandParameter="remove"
+                            IsEnabled="{Binding CanTransferRemove}"
+                            ToolTipService.ShowOnDisabled="True" ToolTip="{Binding TransferRemoveTip}"
+                            MinWidth="112" />
+                </StackPanel>
+            </Grid>
 
             <!-- 右：分组面板 -->
-            <DockPanel Grid.Column="2" Margin="6,0,0,0">
-                <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,6"
-                           Foreground="{DynamicResource B.Navy}"
-                           Text="{DynamicResource L.Main_GroupsHeader}" />
-                <TextBlock DockPanel.Dock="Bottom" Text="{Binding GroupInfo}"
-                           Foreground="{DynamicResource B.TextDim}" Margin="0,6,0,0" />
-                <!-- 成员操作行：加入当前组是本面板主操作，占双列宽并用主题色强调；导入并入同排，省一行高度 -->
-                <Grid DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="120" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="1.5*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="{DynamicResource L.Main_AddToGroup}"
-                            Command="{Binding ApplyCheckedToCurrentGroupCommand}" CommandParameter="add"
-                            Margin="0,0,6,0" Style="{StaticResource PrimaryButton}" />
-                    <Button Grid.Column="1" Content="{DynamicResource L.Main_RemoveFromGroup}"
-                            Command="{Binding ApplyCheckedToCurrentGroupCommand}" CommandParameter="remove"
-                            Margin="0,0,6,0" />
-                    <Button Grid.Column="2" Content="{DynamicResource L.Main_Undo}" Command="{Binding UndoCommand}" Margin="0,0,6,0" />
-                    <Button Grid.Column="3" Content="{DynamicResource L.Main_ImportGroups}" Click="Import_Click" />
+                    <TextBlock Grid.Column="0" Style="{StaticResource SectionHeader}"
+                               Text="{DynamicResource L.Main_GroupsHeader}" />
+                    <!-- 组管理收进一个「⋯」：新建/重命名/删除/查看/规则归组 都是低频动作，
+                         占着主面板按钮位会把「加入组」压下去 -->
+                    <Button x:Name="GroupMenuButton" Grid.Column="1" Style="{StaticResource IconButton}"
+                            Content="⋯" Click="GroupMenu_Click" ToolTip="{DynamicResource L.Main_GroupManage}" />
                 </Grid>
-                <UniformGrid DockPanel.Dock="Bottom" Columns="5" Margin="0,8,0,0">
-                    <Button Content="{DynamicResource L.Main_NewGroup}" Click="NewGroup_Click" Margin="0,0,6,0" />
-                    <Button Content="{DynamicResource L.Main_Rename}" Click="RenameGroup_Click" Margin="0,0,6,0" />
-                    <Button Content="{DynamicResource L.Main_DeleteGroup}" Click="DeleteGroup_Click" Margin="0,0,6,0" />
-                    <Button Content="{DynamicResource L.Main_ViewGroup}" Click="ViewMembers_Click" Margin="0,0,6,0" />
-                    <Button Content="{DynamicResource L.Main_RuleGrouping}" Click="Rules_Click" />
-                </UniformGrid>
-                <ListBox ItemsSource="{Binding Groups}" SelectedIndex="{Binding SelectedGroupIndex}"
-                         BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
+
+                <Grid Grid.Row="1">
+                    <ListBox x:Name="GroupList" ItemsSource="{Binding Groups}" SelectedIndex="{Binding SelectedGroupIndex}"
+                             BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             MouseDoubleClick="Groups_DoubleClick">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{DynamicResource L.Main_NewGroup}" Click="NewGroup_Click" />
+                                <MenuItem Header="{DynamicResource L.Main_Rename}" Click="RenameGroup_Click" />
+                                <MenuItem Header="{DynamicResource L.Main_ViewGroup}" Click="ViewMembers_Click" />
+                                <MenuItem Header="{DynamicResource L.Main_RuleGrouping}" Click="Rules_Click" />
+                                <Separator />
+                                <MenuItem Header="{DynamicResource L.Main_DeleteGroup}" Click="DeleteGroup_Click"
+                                          Style="{StaticResource DangerMenuItem}" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Display}" Padding="4,2"
+                                           TextTrimming="CharacterEllipsis" ToolTip="{Binding Display}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding IsGroupsEmpty, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource EmptyStateText}" Text="{DynamicResource L.Empty_Groups}" />
+                        <Button Content="{DynamicResource L.Main_NewGroup}" Click="NewGroup_Click"
+                                HorizontalAlignment="Center" MinWidth="120" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Grid.Row="2" Text="{Binding GroupInfo}"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding GroupInfo}"
+                           Foreground="{DynamicResource B.TextDim}" Margin="0,6,0,0" />
+            </Grid>
+        </Grid>
+
+        <!-- ── 行 3：保存 ── -->
+        <Button Grid.Row="3" x:Name="SaveButton" Content="{Binding SaveButtonLabel}"
+                Height="34" MinWidth="180" Margin="12,0,12,4"
+                Command="{Binding SaveCommand}" HorizontalAlignment="Right">
+            <Button.Style>
+                <!-- 未保存态不再硬编码 #E8A33A（白字压它只有 2.16:1，是全项目唯一一处视图内硬编码色）：
+                     底色改走色板键 B.Warn（暗 5.91:1 / 亮 5.02:1），并且颜色之外再加一个圆点徽标 + 文案后缀，
+                     色盲用户也能分辨；IsDirty=False 的显式分支负责复位，避免样式残留。 -->
+                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDirty}" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource B.Warn}" />
+                            <Setter Property="ToolTip" Value="{DynamicResource L.Main_SaveDirtyTip}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsDirty}" Value="False">
+                            <Setter Property="Background" Value="{DynamicResource B.Accent}" />
+                            <Setter Property="ToolTip" Value="{DynamicResource L.Main_Save}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
+        <!-- ── 行 4：日志。默认折叠成一行摘要 —— 96 DIP 常驻的日志框在 660 高的窗口里是 15% 的高度，
+             而它 95% 的时间只是静态噪声（也正是旧版布局崩坏的诱因之一）。 ── -->
+        <Grid Grid.Row="4" Margin="12,0,12,4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button x:Name="LogSummaryButton" Click="LogToggle_Click" Padding="8,3"
+                            ToolTip="{DynamicResource L.Log_ToggleTip}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M 0 0 L 4 4 L 0 8" Stroke="{DynamicResource B.TextDim}" StrokeThickness="1.6"
+                                  Margin="1,0,8,0" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                                <Path.Style>
+                                    <Style TargetType="Path">
+                                        <Setter Property="RenderTransform">
+                                            <Setter.Value>
+                                                <RotateTransform Angle="0" />
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLogExpanded}" Value="True">
+                                                <Setter Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <RotateTransform Angle="90" />
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                            <TextBlock Text="{Binding LogSummary}" VerticalAlignment="Center" />
+                            <Border Style="{StaticResource CountBadge}" Margin="8,0,0,0"
+                                    Visibility="{Binding HasLogIssues, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Style="{StaticResource CountBadgeText}" Text="{Binding LogIssueCount}" />
+                            </Border>
+                        </StackPanel>
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasLogIssues}" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource B.WarnText}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource B.WarnText}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                            Visibility="{Binding IsLogExpanded, Converter={StaticResource BoolToVis}}">
+                    <Button Content="{DynamicResource L.Btn_CopyAll}" Click="LogCopy_Click" Margin="0,0,6,0" />
+                    <Button Content="{DynamicResource L.Log_Clear}" Click="LogClear_Click" />
+                </StackPanel>
+            </Grid>
+
+            <Thumb Grid.Row="1" Style="{StaticResource GripThumb}" DragDelta="LogResizeThumb_DragDelta"
+                   Visibility="{Binding IsLogExpanded, Converter={StaticResource BoolToVis}}" />
+
+            <Border Grid.Row="2" Height="{Binding LogPanelHeight}"
+                    Background="{DynamicResource B.Card}" BorderBrush="{DynamicResource B.Border}"
+                    BorderThickness="1" CornerRadius="4"
+                    Visibility="{Binding IsLogExpanded, Converter={StaticResource BoolToVis}}">
+                <ListBox x:Name="LogList" ItemsSource="{Binding LogLines}"
+                         Background="Transparent" BorderThickness="0" Padding="4,2"
+                         Focusable="False" IsTabStop="False" SelectionMode="Single"
                          VirtualizingPanel.IsVirtualizing="True"
-                         MouseDoubleClick="Groups_DoubleClick">
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         FontFamily="{StaticResource MonoFont}" FontSize="12">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Display}" Padding="4,2" />
+                            <TextBlock Text="{Binding Text}" TextWrapping="NoWrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Level}" Value="Warning">
+                                                <Setter Property="Foreground" Value="{DynamicResource B.WarnText}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Level}" Value="Error">
+                                                <Setter Property="Foreground" Value="{DynamicResource B.Danger}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </DockPanel>
+            </Border>
         </Grid>
-        </DockPanel>
+
+        <!-- ── 行 5：状态栏 ──
+             默认主题样式会显式设前景色盖过窗口继承，须再指回主题文字色 -->
+        <StatusBar Grid.Row="5" Background="{DynamicResource B.Panel}" BorderBrush="{DynamicResource B.BorderSoft}"
+                   Foreground="{DynamicResource B.Text}" BorderThickness="0,1,0,0">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusCounts}" TextTrimming="CharacterEllipsis" ToolTip="{Binding StatusCounts}" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock x:Name="OutputLink" Text="{Binding OutputText}" Foreground="{DynamicResource B.AccentText}"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding OutputToolTip}"
+                           MouseLeftButtonUp="Output_Click" Cursor="Hand" />
+            </StatusBarItem>
+        </StatusBar>
 
         <!-- 扫描进度遮罩：BodySlide 探测/服装扫描期间盖住全窗口并拦截点击，
              明示"正在干活"而不是无响应；文字与进度条都走主题画刷（暗色下不能继承黑字） -->
-        <Grid Background="{DynamicResource B.Scrim}"
+        <Grid Grid.Row="0" Grid.RowSpan="6" Background="{DynamicResource B.Scrim}"
               Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" Focusable="False">
             <Border HorizontalAlignment="Center" VerticalAlignment="Center"
                     Background="{DynamicResource B.Panel}" BorderBrush="{DynamicResource B.Border}"
-                    BorderThickness="1" CornerRadius="8" Padding="30,22" MinWidth="400">
+                    BorderThickness="1" CornerRadius="8" Padding="30,22" MinWidth="400"
+                    MaxWidth="560">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="18" ShadowDepth="2" Opacity="0.45" />
                 </Border.Effect>
@@ -300,7 +524,7 @@
                     <TextBlock Text="{Binding ScanStatusText}" Foreground="{DynamicResource B.Text}"
                                FontSize="14" FontWeight="Bold" TextWrapping="Wrap" />
                     <ProgressBar Height="6" Margin="0,14,0,0" Minimum="0" Maximum="100" BorderThickness="0"
-                                 Background="{DynamicResource B.BorderSoft}" Foreground="{DynamicResource B.Accent}"
+                                 Background="{DynamicResource B.BorderSoft}" Foreground="{DynamicResource B.AccentBorder}"
                                  Value="{Binding ScanProgressValue}" IsIndeterminate="{Binding IsDetecting}" />
                     <TextBlock Text="{Binding ScanProgressDetail}" Foreground="{DynamicResource B.TextDim}"
                                Margin="0,9,0,0" FontSize="12" TextWrapping="Wrap">

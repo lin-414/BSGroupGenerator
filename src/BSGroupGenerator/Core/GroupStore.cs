@@ -17,8 +17,10 @@ public class GroupStore
 
     public event Action? Changed;
 
+    // Current 用忽略大小写匹配：CurrentGroupName 可以来自界面上用户敲的名字（或外部传入的组名），
+    // 与 GetGroup / GroupNameExists 的大小写策略保持一致，避免"选中的组名大小写不同 → Current 变 null"
     public SliderGroup? Current =>
-        _groups.FirstOrDefault(g => string.Equals(g.Name, CurrentGroupName, StringComparison.Ordinal));
+        _groups.FirstOrDefault(g => string.Equals(g.Name, CurrentGroupName, StringComparison.OrdinalIgnoreCase));
 
     public SliderGroup? GetGroup(string name) =>
         _groups.FirstOrDefault(g => string.Equals(g.Name, name, StringComparison.OrdinalIgnoreCase));
@@ -68,9 +70,9 @@ public class GroupStore
     {
         name = name.Trim();
         if (name.Length == 0)
-            return (false, "组名不能为空。");
+            return (false, CoreStrings.Get("L.Core_GroupEmptyName"));
         if (GroupNameExists(name))
-            return (false, "已存在同名组（忽略大小写）。");
+            return (false, CoreStrings.Get("L.Core_GroupDuplicate"));
         Snapshot();
         _groups.Add(new SliderGroup(name));
         CurrentGroupName = name;
@@ -82,12 +84,12 @@ public class GroupStore
     {
         var group = _groups.FirstOrDefault(g => string.Equals(g.Name, oldName, StringComparison.Ordinal));
         if (group is null)
-            return (false, "找不到要重命名的组。");
+            return (false, CoreStrings.Get("L.Core_GroupRenameMissing"));
         newName = newName.Trim();
         if (newName.Length == 0 || newName == group.Name)
             return (true, null);
         if (GroupNameExists(newName, group))
-            return (false, "已存在同名组（忽略大小写）。");
+            return (false, CoreStrings.Get("L.Core_GroupDuplicate"));
         Snapshot();
         group.Name = newName;
         if (string.Equals(CurrentGroupName, oldName, StringComparison.Ordinal))
@@ -113,7 +115,7 @@ public class GroupStore
     {
         var group = Current;
         if (group is null)
-            return (false, "请先在右侧新建或选中一个组。");
+            return (false, CoreStrings.Get("L.Core_GroupNeedSelection"));
         Snapshot();
         ApplyMembership(group, outfit, add);
         MarkDirty();
@@ -124,7 +126,7 @@ public class GroupStore
     {
         var group = Current;
         if (group is null)
-            return (false, "请先在右侧新建或选中一个组。");
+            return (false, CoreStrings.Get("L.Core_GroupNeedSelection"));
         Snapshot();
         foreach (var outfit in outfits.Distinct(StringComparer.Ordinal))
             ApplyMembership(group, outfit, add);
@@ -164,7 +166,7 @@ public class GroupStore
     {
         var group = GetGroup(groupName);
         if (group is null)
-            return (false, "找不到目标组。");
+            return (false, CoreStrings.Get("L.Core_GroupTargetMissing"));
         Snapshot();
         foreach (var name in names)
             group.Members.RemoveAll(m => m == name);
@@ -205,7 +207,7 @@ public class GroupStore
     public (bool Ok, string? Error) Undo()
     {
         if (_undoStack.Count == 0)
-            return (false, "没有可撤销的操作。");
+            return (false, CoreStrings.Get("L.Core_GroupNothingToUndo"));
         var restored = _undoStack.Pop();
         _groups.Clear();
         _groups.AddRange(restored);
@@ -241,10 +243,13 @@ public class GroupStore
         }
     }
 
-    /// <summary>界面侧直接变更组数据后（如成员预览移除）标记脏并通知。</summary>
+    /// <summary>界面侧直接变更组数据后（如成员预览移除）标记脏并通知。
+    /// 成员集合被就地改过，必须一并失效成员缓存——否则 <see cref="IsInAnyGroup"/> 会一直用旧集合
+    /// 回答，界面上表现为"刚移除的服装仍显示在组内"。</summary>
     public void MarkDirtyFromUi()
     {
         Dirty = true;
+        InvalidateMembershipCache();
         Changed?.Invoke();
     }
 

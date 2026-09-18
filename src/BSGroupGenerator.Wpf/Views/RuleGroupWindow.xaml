@@ -4,7 +4,7 @@
         xmlns:ui="clr-namespace:BSGroupGenerator.Wpf.Services"
         Title="{DynamicResource L.RuleGroup_Title}" Width="600" Height="660" WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False" Background="{DynamicResource B.Window}"
-        FontFamily="{StaticResource AppFont}" FontSize="13">
+        FontFamily="{StaticResource AppFont}" FontSize="13" Style="{StaticResource AppWindow}">
     <DockPanel>
         <TextBlock DockPanel.Dock="Top" Margin="12,10,12,0" TextWrapping="Wrap" LineHeight="19"
                    Foreground="{DynamicResource B.TextDim}"
@@ -16,7 +16,10 @@
         </StackPanel>
         <Grid Margin="12,8,12,4">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="96" />
+                <!-- 按内容定宽：固定 96 是照中文标签（「模组关键字」约 65）定的，
+                     换成英语的 Excluded keywords（122）或俄语的 Ключевые слова комплектов（197）
+                     会整块向左溢出到窗口外——固定像素列并不约束子元素 -->
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
